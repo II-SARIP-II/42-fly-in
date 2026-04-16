@@ -2,6 +2,7 @@ from pydantic import BaseModel, model_validator, Field, ValidationError
 from enum import Enum
 from typing import List, Dict, Any
 from typing_extensions import Self
+import sys
 
 
 class ZoneType(Enum):
@@ -187,7 +188,7 @@ def drone_line(line: str, idx: int, nb_drone: int, set_drone: bool) -> int:
     return nb_drone
 
 
-def parse_file(filename: str) -> Input_Datas:
+def read_file(filename: str) -> Input_Datas:
     with open(filename, 'r') as f:
         lst = f.read().splitlines()
     set_drone = False
@@ -198,6 +199,7 @@ def parse_file(filename: str) -> Input_Datas:
         if line.startswith("nb_drones: "):
             try:
                 nb_drone = drone_line(line, idx+1, nb_drone, set_drone)
+                set_drone = True
             except Exception as e:
                 raise ValueError(e)
 
@@ -221,16 +223,21 @@ def parse_file(filename: str) -> Input_Datas:
 
         elif line.startswith("#") or line == "":
             pass
+        
         else:
             raise ValueError(f"Error in line {idx+1}: unknown line")
 
     return Input_Datas(nb_drones=nb_drone, hubs=hubs, connections=connections)
 
 
-try:
-    input_datas: Input_Datas = parse_file("maps/easy/01_linear_path.txt")
-except ValidationError as e:
-    print(e.errors()[0]['msg'])
-except Exception as e:
-    print(e)
-print(input_datas)
+def parsing() -> Input_Datas:
+    if len(sys.argv) != 2:
+        raise ValueError("Program should be run with "
+                         "'python3 -m src path/to/input_file.txt'")
+    try:
+        input_datas: Input_Datas = read_file(sys.argv[1])
+        return(input_datas)
+    except ValidationError as e:
+        raise ValidationError(e.errors()[0]['msg'])
+    except Exception as e:
+        raise Exception(e)
