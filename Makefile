@@ -15,16 +15,16 @@ debug:
 	uv run python -m pdb src/__main__.py
 
 clean:
-	rm -rf __pycache__ .mypy_cache .python-version llm_sdk/.mypy_cache llm_sdk/__pycache__ .vscode
+	rm -rf __pycache__ .mypy_cache .python-version .vscode
 	find . -type d -name "__pycache__" -exec rm -rf {} +
 
 
 lint:
-	$(FLK) . --extend-exclude .venv,llm_sdk
+	$(FLK) . --extend-exclude .venv
 	$(MYPY) . $(FLAGS)
 
 lint-strict:
-	$(FLK) . --extend-exclude .venv,llm_sdk
+	$(FLK) . --extend-exclude .venv
 	$(MYPY) . --strict
 
 init:
