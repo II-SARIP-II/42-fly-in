@@ -12,30 +12,6 @@ class ZoneType(Enum):
     PRIORITY = "priority"
 
 
-class ColorList(Enum):
-    NONE = "none"
-    GRAY = "gray"
-    RED = "red"
-    GREEN = "green"
-    BLUE = "blue"
-    PINK = "pink"
-    ORANGE = "orange"
-    YELLOW = "yellow"
-    BROWN = "brown"
-    PURPLE = "purple"
-    MAROON = "maroon"
-    GOLD = "gold"
-    DARKRED = "darkred"
-    BLACK = "black"
-    WHITE = "white"
-    VIOLET = "violet"
-    CRIMSON = "crimson"
-    RAINBOW = "rainbow"
-    CYAN = "cyan"
-    LIME = "lime"
-    MAGENTA = "magenta"
-
-
 class Hub(BaseModel):
     name: str
     x: int
@@ -43,7 +19,7 @@ class Hub(BaseModel):
     is_start: bool = Field(default=False)
     is_end: bool = Field(default=False)
     zone: ZoneType = Field(default=ZoneType.NORMAL)
-    color: ColorList = Field(default=ColorList.NONE)
+    color: str = Field(default="gray")
     max_drones: int = Field(default=1)
 
 
@@ -54,7 +30,7 @@ class Connection(BaseModel):
 # The connection syntax forbids dashes in zone names.
 
 
-class Input_Datas(BaseModel):
+class Input_Data(BaseModel):
     nb_drones: int = Field(ge=0)
     hubs: List[Hub] = Field(default=[])
     connections: List[Connection] = Field(default=[])
@@ -77,10 +53,10 @@ class Input_Datas(BaseModel):
         return self
 
 
-def create_hub_metadata(datas: str,
+def create_hub_metadata(data: str,
                         hub_data: Dict[str, Any]
                         ) -> tuple[str, Dict[str, Any]]:
-    datas, meta = datas.split(" [")
+    data, meta = data.split(" [")
     meta = meta.replace("]", "")
     lst_meta = meta.split(" ")
     for item in lst_meta:
@@ -94,7 +70,7 @@ def create_hub_metadata(datas: str,
                                      "the zone value is unknown")
             case "color":
                 try:
-                    hub_data["color"] = ColorList(metavalue.lower())
+                    hub_data["color"] = metavalue.lower()
                 except KeyError:
                     raise ValueError("Input Error: Metadata: "
                                      "the color value is unknown")
@@ -107,11 +83,11 @@ def create_hub_metadata(datas: str,
             case _:
                 raise ValueError("Input Error: Only zone, color and "
                                  "max_drones can be in meta data")
-    return datas, hub_data
+    return data, hub_data
 
 
 def create_hub(line: str) -> Hub:
-    title, datas = line.split(": ")
+    title, data = line.split(": ")
     hub_data: Dict[str, Any] = {
         "is_start": False,
         "is_end": False,
@@ -123,12 +99,12 @@ def create_hub(line: str) -> Hub:
         hub_data["is_start"] = True
     if title == "end_hub":
         hub_data["is_end"] = True
-    if " [" in datas:
+    if " [" in data:
         try:
-            datas, hub_data = create_hub_metadata(datas, hub_data)
+            data, hub_data = create_hub_metadata(data, hub_data)
         except Exception as e:
             raise ValidationError(e)
-    lst_major = datas.split(" ")
+    lst_major = data.split(" ")
     if len(lst_major) != 3:
         raise ValueError("Input Error: the hub creation must be define "
                          "as 'name(string) x(integer) y(integer)'")
@@ -143,7 +119,7 @@ def create_connection(line: str,
                       connections: List[Connection]
                       ) -> Connection:
     try:
-        title, datas = line.split(": ")
+        title, data = line.split(": ")
     except Exception:
         raise ValueError("Input Error: connection lines "
                          "must be 'connection: hub1-hub2'")
@@ -151,8 +127,8 @@ def create_connection(line: str,
         raise ValueError("Input Error: connection lines "
                          "must be 'connection: hub1-hub2'")
     max_link = 1
-    if " [max_link_capacity=" in datas:
-        datas, metadata = datas.split(" [")
+    if " [max_link_capacity=" in data:
+        data, metadata = data.split(" [")
         metadata = metadata.replace("]", "")
         try:
             max_link = int(metadata.split("=")[1])
@@ -160,16 +136,16 @@ def create_connection(line: str,
             raise ValueError("Input Error: max_link_capacity must be an "
                              "int and define like this: [max_link_capacity=1]")
     try:
-        hub1, hub2 = datas.split("-")
+        hub1, hub2 = data.split("-")
     except Exception:
         raise ValueError("Input Error: connection lines "
                          "must be 'connection: hub1-hub2'")
     name_lst = [item.name for item in lst_hubs]
     if hub1 not in name_lst or hub2 not in name_lst:
-        raise ValueError(f"Input Error: {datas}, one or more hubs are invalid")
+        raise ValueError(f"Input Error: {data}, one or more hubs are invalid")
     lst_connection = [[item.hub1, item.hub2] for item in connections]
     if [hub1, hub2] in lst_connection or [hub2, hub1] in lst_connection:
-        raise ValueError(f"Input Error: {datas}, connection already exist")
+        raise ValueError(f"Input Error: {data}, connection already exist")
     return Connection(hub1=hub1, hub2=hub2, max_link_capacity=max_link)
 
 
@@ -188,7 +164,7 @@ def drone_line(line: str, idx: int, nb_drone: int, set_drone: bool) -> int:
     return nb_drone
 
 
-def read_file(filename: str) -> Input_Datas:
+def read_file(filename: str) -> Input_Data:
     with open(filename, 'r') as f:
         lst = f.read().splitlines()
     set_drone = False
@@ -227,16 +203,16 @@ def read_file(filename: str) -> Input_Datas:
         else:
             raise ValueError(f"Error in line {idx+1}: unknown line")
 
-    return Input_Datas(nb_drones=nb_drone, hubs=hubs, connections=connections)
+    return Input_Data(nb_drones=nb_drone, hubs=hubs, connections=connections)
 
 
-def parsing() -> Input_Datas:
+def parsing() -> Input_Data:
     if len(sys.argv) != 2:
         raise ValueError("Program should be run with "
                          "'python3 -m src path/to/input_file.txt'")
     try:
-        input_datas: Input_Datas = read_file(sys.argv[1])
-        return(input_datas)
+        input_data: Input_Data = read_file(sys.argv[1])
+        return(input_data)
     except ValidationError as e:
         raise ValidationError(e.errors()[0]['msg'])
     except Exception as e:
