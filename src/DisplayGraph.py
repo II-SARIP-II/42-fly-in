@@ -53,9 +53,10 @@ class DisplayScreen:
             }
             self.lines.append(line)
 
-    def get_all_drones(self):
-        for _ in range(self.input_data.nb_drones):
+    def init_drones(self):
+        for i in range(self.input_data.nb_drones):
             drone = {
+            "id": i,
             "posX": self.start.x - self.hub_size,
             "posY": self.start.y - self.hub_size
             }
@@ -117,5 +118,5 @@ def display(input_data: Input_Data):
     game.get_all_circles()
     game.get_all_lines()
     game.get_img_drone()
-    game.get_all_drones()
+    game.init_drones()
     game.run()
