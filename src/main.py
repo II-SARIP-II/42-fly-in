@@ -1,5 +1,7 @@
 from .parsing import parsing, Hub, Connection, Input_Data
 from .DisplayGraph import display
+from .dijkstra import dijkstra
+
 
 def main():
     try:
@@ -8,4 +10,5 @@ def main():
         print(e)
         return
 
+    dijkstra(input_data)
     display(input_data)

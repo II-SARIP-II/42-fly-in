@@ -6,6 +6,8 @@ from .parsing import Hub, Connection, Input_Data
 class DisplayScreen:
     def __init__(self, input_data: Input_Data):
         pygame.init()
+        pygame.font.init()
+        self.font = pygame.font.get_default_font()
         self.width = 1280
         self.heigh = 720
         self.screen = pygame.display.set_mode((self.width, self.heigh))
@@ -18,7 +20,7 @@ class DisplayScreen:
         self.circles = []
         self.lines = []
         self.drones = []
-        self.hub_size = 30
+        self.hub_size = 20
         self.start = pygame.Vector2(0,0)
         self.end = pygame.Vector2(0,0)
 
@@ -67,11 +69,12 @@ class DisplayScreen:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
-            self.screen.fill("purple")
+            pygame.font.Font
+            self.screen.fill("white")
             for line in self.lines:
                 pygame.draw.line(self.screen, "black", line["pos_start"], line["pos_end"], width=2)
             for circle in self.circles:
-                pygame.draw.circle(self.screen, circle["color"], circle["pos"], self.hub_size)
+                pygame.draw.circle(self.screen, self._get_valid_color(circle["color"]), circle["pos"], self.hub_size)
             for drone in self.drones:
                 self.screen.blit(self.drone_img, (drone["posX"], drone["posY"]))
             pygame.display.flip()
@@ -112,6 +115,26 @@ class DisplayScreen:
         original_img = pygame.image.load("assets/drone.png").convert_alpha()
         self.drone_img = pygame.transform.scale(original_img, (self.hub_size*2, self.hub_size*2))
 
+    def _get_valid_color(self, color_name: str | None) -> str:
+        """Return a pygame-safe color name with fallback.
+
+        Args:
+            color_name: Candidate color name from metadata.
+
+        Returns:
+            Valid color string accepted by pygame.
+        """
+        if not color_name:
+            return "gray"
+
+        try:
+            pygame.Color(color_name)
+            return color_name
+        except ValueError:
+            return "gray"
+
+    def quit() -> None:
+        pygame.font.quit()
 
 def display(input_data: Input_Data):
     game = DisplayScreen(input_data)
@@ -120,3 +143,4 @@ def display(input_data: Input_Data):
     game.get_img_drone()
     game.init_drones()
     game.run()
+    game.quit()
