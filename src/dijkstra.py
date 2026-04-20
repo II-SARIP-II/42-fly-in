@@ -17,4 +17,5 @@ def dijkstra(input_data: Input_Data):
             graph[connection.hub1].append(connection.hub2)
         else:
             graph.update({connection.hub1: [connection.hub2]})
+    
     print(graph)
