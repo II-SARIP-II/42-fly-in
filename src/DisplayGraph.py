@@ -1,16 +1,17 @@
 import pygame
 from typing import List
-from .parsing import Hub, Connection, Input_Data
+from .parsing import Hub, Connection, Input_Data, ZoneType
 
 
 class DisplayScreen:
     def __init__(self, input_data: Input_Data):
         pygame.init()
         pygame.font.init()
-        self.font = pygame.font.get_default_font()
+        self.font = pygame.font.SysFont('freesansbold', 10)
         self.width = 1280
         self.heigh = 720
         self.screen = pygame.display.set_mode((self.width, self.heigh))
+        self.title = pygame.display.set_caption('Fly-In by Pgougne')
         self.clock = pygame.time.Clock()
         self.running = True
         self.dt = 0
@@ -37,20 +38,16 @@ class DisplayScreen:
                 "is_end": hub.is_end,
                 "zone": hub.zone,
                 "color": hub.color,
+                "score": hub.score,
                 "max_drones": hub.max_drones
             }
             self.circles.append(circle)
 
     def get_all_lines(self):
         for connection in self.input_data.connections:
-            for hub in self.input_data.hubs:
-                if hub.name == connection.hub1:
-                    h1: Hub = hub
-                if hub.name == connection.hub2:
-                    h2: Hub = hub
             line = {
-                "pos_start": pygame.Vector2(self.get_hub_pos(h1.x, h1.y)),
-                "pos_end": pygame.Vector2(self.get_hub_pos(h2.x, h2.y)),
+                "pos_start": pygame.Vector2(self.get_hub_pos(connection.hub1.x, connection.hub1.y)),
+                "pos_end": pygame.Vector2(self.get_hub_pos(connection.hub2.x, connection.hub2.y)),
                 "max_link_capacity": connection.max_link_capacity
             }
             self.lines.append(line)
@@ -64,19 +61,59 @@ class DisplayScreen:
             }
             self.drones.append(drone)
 
+    def render_circles(self):
+        for circle in self.circles:
+            pygame.draw.circle(self.screen, self._get_valid_color(circle["color"]), circle
+            ["pos"], self.hub_size)
+            txt = "max_drone: " + str(circle["max_drones"])
+            txt += "\nscore: " + str(circle["score"])
+            # txt += ZoneType.circle["zone"] + "\n"
+            text1 = self.font.render(txt, True, (0, 0, 0))
+            textRect1 = text1.get_rect()
+            x, y = circle["pos"]
+            textRect1.center = (x, y - self.hub_size*2)
+            self.screen.blit(text1, textRect1)
+            
+
+    def render_lines(self):
+        for line in self.lines:
+            pygame.draw.line(self.screen, "black", line["pos_start"], line["pos_end"], width=2)
+            txt = "max_cap: " + str(line["max_link_capacity"])
+            text = self.font.render(txt, True, (0, 0, 0))
+            textRect1 = text.get_rect()
+            xs, ys = line["pos_start"]
+            xe, ye = line["pos_end"]
+            px = xs + (xs - xe)/2 if xs > xe else xs + (xe - xs)/2
+            py = ye + (ys - ye) if ye < ys else ys + (ye - ys)
+            textRect1.center = (px, py-10)
+            self.screen.blit(text, textRect1)
+
+    def render_drones(self):
+        counts = {}
+        for drone in self.drones:
+            pos = (drone["posX"], drone["posY"])
+            counts[pos] = counts.get(pos, 0) + 1
+            self.screen.blit(self.drone_img, (drone["posX"], drone["posY"]))
+
+        for (x, y), nb in counts.items():
+            if nb > 1:
+                text_surf = self.font.render(str(nb), True, (0, 0, 0))
+                text_rect = text_surf.get_rect()
+                text_rect.center = (x + self.hub_size, y + self.hub_size * 2) 
+                self.screen.blit(text_surf, text_rect)
+
     def run(self):
         while self.running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
-            pygame.font.Font
+            pygame.font.Font()
             self.screen.fill("white")
-            for line in self.lines:
-                pygame.draw.line(self.screen, "black", line["pos_start"], line["pos_end"], width=2)
-            for circle in self.circles:
-                pygame.draw.circle(self.screen, self._get_valid_color(circle["color"]), circle["pos"], self.hub_size)
-            for drone in self.drones:
-                self.screen.blit(self.drone_img, (drone["posX"], drone["posY"]))
+
+            self.render_lines()
+            self.render_circles()
+            self.render_drones()
+
             pygame.display.flip()
             keys = pygame.key.get_pressed()
             if keys[pygame.K_ESCAPE] or keys[pygame.K_q]:
@@ -143,4 +180,4 @@ def display(input_data: Input_Data):
     game.get_img_drone()
     game.init_drones()
     game.run()
-    game.quit()
+    # game.quit()

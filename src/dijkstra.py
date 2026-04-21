@@ -9,13 +9,40 @@ graph_goal = {
     'D': {'B': 5, 'C': 1} 
 } 
 
+def init_dijkstra(input_data: Input_Data):
+    queue: List[Hub] = []
+    src: Hub
+    goal: Hub
+    for conn in input_data.connections:
+        if conn.hub1.is_start:
+            src = conn.hub1
+            src.score = 0
+            queue.append(src)
+        if conn.hub2.is_end:
+            goal = conn.hub2
+    if not src or not goal:
+        raise ValueError("Input Error: it must be a start "
+                         "and an end to the graph")
+    return queue
+
+
+def get_hub_scores(input_data: Input_Data, queue: List[Hub]):
+    while queue:
+        for conn in input_data.connections:
+            if conn.hub1 == queue[0]:
+                if conn.hub1.score + 1 < conn.hub2.score:
+                    conn.hub2.score = conn.hub1.score + 1
+                    queue.append(conn.hub2)
+        queue.remove(queue[0])
+    return input_data
+
+
 
 def dijkstra(input_data: Input_Data):
-    graph: Dict[Hub, List[Hub]] = {}
-    for connection in input_data.connections:
-        if connection.hub1 in graph:
-            graph[connection.hub1].append(connection.hub2)
-        else:
-            graph.update({connection.hub1: [connection.hub2]})
-    
-    print(graph)
+    try:
+        queue = init_dijkstra(input_data)
+    except Exception as e:
+        raise ValueError(e)
+    input_data = get_hub_scores(input_data, queue)
+    # for hub in input_data.hubs:
+    #     print(hub)

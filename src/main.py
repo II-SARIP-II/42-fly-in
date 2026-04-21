@@ -4,11 +4,6 @@ from .dijkstra import dijkstra
 
 
 def main():
-    try:
-        input_data: Input_Data = parsing()
-    except Exception as e:
-        print(e)
-        return
-
+    input_data: Input_Data = parsing()
     dijkstra(input_data)
     display(input_data)

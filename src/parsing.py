@@ -3,6 +3,7 @@ from enum import Enum
 from typing import List, Dict, Any
 from typing_extensions import Self
 import sys
+import math
 
 
 class ZoneType(Enum):
@@ -21,11 +22,12 @@ class Hub(BaseModel):
     zone: ZoneType = Field(default=ZoneType.NORMAL)
     color: str = Field(default="gray")
     max_drones: int = Field(default=1)
+    score: int = math.inf
 
 
 class Connection(BaseModel):
-    hub1: str
-    hub2: str
+    hub1: Hub
+    hub2: Hub
     max_link_capacity: int = Field(default=1)
 # The connection syntax forbids dashes in zone names.
 
@@ -136,16 +138,19 @@ def create_connection(line: str,
             raise ValueError("Input Error: max_link_capacity must be an "
                              "int and define like this: [max_link_capacity=1]")
     try:
-        hub1, hub2 = data.split("-")
+        name1, name2 = data.split("-")
     except Exception:
         raise ValueError("Input Error: connection lines "
                          "must be 'connection: hub1-hub2'")
-    name_lst = [item.name for item in lst_hubs]
-    if hub1 not in name_lst or hub2 not in name_lst:
+    hub_map = {hub.name: hub for hub in lst_hubs}
+    if name1 not in hub_map or name2 not in hub_map:
         raise ValueError(f"Input Error: {data}, one or more hubs are invalid")
-    lst_connection = [[item.hub1, item.hub2] for item in connections]
-    if [hub1, hub2] in lst_connection or [hub2, hub1] in lst_connection:
-        raise ValueError(f"Input Error: {data}, connection already exist")
+    hub1 = hub_map[name1]
+    hub2 = hub_map[name2]
+    for conn in connections:
+        existing_names = {conn.hub1.name, conn.hub2.name}
+        if {name1, name2} == existing_names:
+            raise ValueError(f"Input Error: {data}, connection already exists")
     return Connection(hub1=hub1, hub2=hub2, max_link_capacity=max_link)
 
 
