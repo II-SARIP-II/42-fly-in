@@ -1,5 +1,6 @@
 from .parsing import Input_Data, Hub, Connection
 from typing import Dict, List
+import math
 
 
 graph_goal = { 
@@ -23,7 +24,7 @@ def init_dijkstra(input_data: Input_Data):
     if not src or not goal:
         raise ValueError("Input Error: it must be a start "
                          "and an end to the graph")
-    return queue
+    return queue, goal
 
 
 def get_hub_scores(input_data: Input_Data, queue: List[Hub]):
@@ -37,12 +38,27 @@ def get_hub_scores(input_data: Input_Data, queue: List[Hub]):
     return input_data
 
 
+def get_shortest_path(input_data: Input_Data, goal: Hub):
+    path: List[Hub] = []
+    next_path: Hub
+    next_path = goal
+    path.append(goal)
+    for _ in enumerate(input_data.connections):
+        for conn in input_data.connections:
+            if conn.hub2 == goal:
+                if conn.hub1.score < next_path.score:
+                    next_path = conn.hub1
+        goal = next_path
+        path.append(goal)
+        if goal.is_start:
+            return path[::-1]
+    return path[::-1]
+
 
 def dijkstra(input_data: Input_Data):
     try:
-        queue = init_dijkstra(input_data)
+        queue, goal = init_dijkstra(input_data)
     except Exception as e:
         raise ValueError(e)
     input_data = get_hub_scores(input_data, queue)
-    # for hub in input_data.hubs:
-    #     print(hub)
+    return get_shortest_path(input_data, goal)
