@@ -5,5 +5,5 @@ from .dijkstra import dijkstra
 
 def main():
     input_data: Input_Data = parsing()
-    dijkstra(input_data)
-    display(input_data)
+    path = dijkstra(input_data)
+    display(input_data, path)
