@@ -1,14 +1,6 @@
 from .parsing import Input_Data, Hub, Connection
 from typing import Dict, List
-import math
 
-
-graph_goal = { 
-    'A': {'B': 1, 'C': 4}, 
-    'B': {'A': 1, 'C': 2, 'D': 5}, 
-    'C': {'A': 4, 'B': 2, 'D': 1}, 
-    'D': {'B': 5, 'C': 1} 
-} 
 
 def init_dijkstra(input_data: Input_Data):
     queue: List[Hub] = []

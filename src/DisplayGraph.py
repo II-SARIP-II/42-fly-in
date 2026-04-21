@@ -50,7 +50,8 @@ class DisplayScreen:
             line = {
                 "pos_start": pygame.Vector2(self.get_hub_pos(connection.hub1.x, connection.hub1.y)),
                 "pos_end": pygame.Vector2(self.get_hub_pos(connection.hub2.x, connection.hub2.y)),
-                "max_link_capacity": connection.max_link_capacity
+                "max_link_capacity": connection.max_link_capacity,
+                "nb_drones_in": connection.nb_drones_in
             }
             self.lines.append(line)
 
@@ -64,31 +65,51 @@ class DisplayScreen:
             self.drones.append(drone)
 
     def render_circles(self):
-        for circle in self.circles:
-            pygame.draw.circle(self.screen, self._get_valid_color(circle["color"]), circle
-            ["pos"], self.hub_size)
-            txt = "max_drone: " + str(circle["max_drones"])
-            txt += "\nscore: " + str(circle["score"]) + "\n"
-            txt += str(circle["zone"]) + "\n"
+        for hub in self.input_data.hubs:
+            pos = pygame.Vector2(self.get_hub_pos(hub.x, hub.y))
+            pygame.draw.circle(self.screen, self._get_valid_color(hub.color), pos, self.hub_size)
+            txt = "max_drone: " + str(hub.max_drones)
+            txt += "\nscore: " + str(hub.score) + "\n"
+            txt += str(hub.zone) + "\n"
             text1 = self.font.render(txt, True, (0, 0, 0))
             textRect1 = text1.get_rect()
-            x, y = circle["pos"]
+            x, y = pos
             textRect1.center = (x, y - self.hub_size*2)
             self.screen.blit(text1, textRect1)
 
             # Drones
-            if circle["nb_drones_in"] > 0:
-                self.screen.blit(self.drone_img, circle["pos"])
-                txt_nb_drones = self.font.render(str(circle["nb_drones_in"]), True, (0, 0, 0))
+            if hub.nb_drones_in > 0:
+                self.screen.blit(self.drone_img, pos)
+                txt_nb_drones = self.font.render(str(hub.nb_drones_in), True, (0, 0, 0))
                 rect_nb_drones = txt_nb_drones.get_rect()
                 rect_nb_drones.center = (x + self.hub_size, y + self.hub_size*2)
                 self.screen.blit(txt_nb_drones, rect_nb_drones)
 
-    def move_drones():
-        
+    def move_drones(self):
+        rev_path = self.path[::-1]
+        for i in range(len(rev_path)):
+            if not self.is_full_hub(rev_path[i]):
+                for connection in self.input_data.connections:
+                    if connection.hub2 == rev_path[i] and connection.nb_drones_in > 0:
+                        possible_drones = rev_path[i].max_drones - rev_path[i].nb_drones_in
+                        if possible_drones <= connection.nb_drones_in:
+                            rev_path[i].nb_drones_in += possible_drones
+                            connection.nb_drones_in -= possible_drones
+                        else:
+                            rev_path[i].nb_drones_in += connection.nb_drones_in
+                            connection.nb_drones_in -= connection.nb_drones_in
+                        if connection.hub1.nb_drones_in > 0:
+
+                            possible_drones = connection.max_link_capacity - connection.nb_drones_in
+                            if possible_drones <= connection.hub1.nb_drones_in:
+                                connection.nb_drones_in += possible_drones
+                                connection.hub1.nb_drones_in -= possible_drones
+                            else:
+                                connection.nb_drones_in += connection.hub2.nb_drones_in
+                                connection.hub1.nb_drones_in -= connection.hub2.nb_drones_in
 
     def render_lines(self):
-        for line in self.lines:
+        for line in self.input_data.connections:
             pygame.draw.line(self.screen, "black", line["pos_start"], line["pos_end"], width=2)
             txt = "max_cap: " + str(line["max_link_capacity"])
             text = self.font.render(txt, True, (0, 0, 0))
@@ -100,19 +121,12 @@ class DisplayScreen:
             textRect1.center = (px, py-10)
             self.screen.blit(text, textRect1)
 
-    def render_drones(self):
-        counts = {}
-        for drone in self.drones:
-            pos = (drone["posX"], drone["posY"])
-            counts[pos] = counts.get(pos, 0) + 1
-            self.screen.blit(self.drone_img, (drone["posX"], drone["posY"]))
-
-        for (x, y), nb in counts.items():
-            if nb > 1:
-                text_surf = self.font.render(str(nb), True, (0, 0, 0))
-                text_rect = text_surf.get_rect()
-                text_rect.center = (x + self.hub_size, y + self.hub_size * 2) 
-                self.screen.blit(text_surf, text_rect)
+            if line["nb_drones_in"] > 0:
+                self.screen.blit(self.drone_img, line["pos"])
+                txt_nb_drones = self.font.render(str(line["nb_drones_in"]), True, (0, 0, 0))
+                rect_nb_drones = txt_nb_drones.get_rect()
+                rect_nb_drones.center = (px + self.hub_size, py + self.hub_size*2)
+                self.screen.blit(txt_nb_drones, rect_nb_drones)
 
     def run(self):
         while self.running:
@@ -129,6 +143,8 @@ class DisplayScreen:
             keys = pygame.key.get_pressed()
             if keys[pygame.K_ESCAPE] or keys[pygame.K_q]:
                 self.running = False
+
+            self.move_drones()
 
             self.clock.tick(60)
 
@@ -159,14 +175,14 @@ class DisplayScreen:
 
         return int(posX), int(posY)
 
-    def is_full(element: Hub | Connection):
-        if type(element) == Hub:
-            return element.max_drones - element.nb_drones_in > 0
-        elif type(element) == Connection:
-            return element.max_link_capacity - element.nb_drones_in > 0
-        else:
-            raise ValueError("Wrong type passed, must be Hub or Connection")
+    @staticmethod
+    def is_full_hub(element: Hub) -> bool:
+        if element.is_end:
+            return False
+        return element.max_drones - element.nb_drones_in < 0
 
+    def is_full_connection(element: Connection):
+        return element.max_link_capacity - element.nb_drones_in < 0
 
     def get_img_drone(self):
         original_img = pygame.image.load("assets/drone.png").convert_alpha()
