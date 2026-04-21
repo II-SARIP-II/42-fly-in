@@ -4,7 +4,7 @@ from .parsing import Hub, Connection, Input_Data, ZoneType
 
 
 class DisplayScreen:
-    def __init__(self, input_data: Input_Data):
+    def __init__(self, input_data: Input_Data, shortest_path: List[Hub]):
         pygame.init()
         pygame.font.init()
         self.font = pygame.font.SysFont('freesansbold', 10)
@@ -24,6 +24,7 @@ class DisplayScreen:
         self.hub_size = 20
         self.start = pygame.Vector2(0,0)
         self.end = pygame.Vector2(0,0)
+        self.path = shortest_path
 
     def get_all_circles(self):
         for hub in self.input_data.hubs:
@@ -39,7 +40,8 @@ class DisplayScreen:
                 "zone": hub.zone,
                 "color": hub.color,
                 "score": hub.score,
-                "max_drones": hub.max_drones
+                "max_drones": hub.max_drones,
+                "nb_drones_in": hub.nb_drones_in
             }
             self.circles.append(circle)
 
@@ -66,14 +68,24 @@ class DisplayScreen:
             pygame.draw.circle(self.screen, self._get_valid_color(circle["color"]), circle
             ["pos"], self.hub_size)
             txt = "max_drone: " + str(circle["max_drones"])
-            txt += "\nscore: " + str(circle["score"])
-            # txt += ZoneType.circle["zone"] + "\n"
+            txt += "\nscore: " + str(circle["score"]) + "\n"
+            txt += str(circle["zone"]) + "\n"
             text1 = self.font.render(txt, True, (0, 0, 0))
             textRect1 = text1.get_rect()
             x, y = circle["pos"]
             textRect1.center = (x, y - self.hub_size*2)
             self.screen.blit(text1, textRect1)
-            
+
+            # Drones
+            if circle["nb_drones_in"] > 0:
+                self.screen.blit(self.drone_img, circle["pos"])
+                txt_nb_drones = self.font.render(str(circle["nb_drones_in"]), True, (0, 0, 0))
+                rect_nb_drones = txt_nb_drones.get_rect()
+                rect_nb_drones.center = (x + self.hub_size, y + self.hub_size*2)
+                self.screen.blit(txt_nb_drones, rect_nb_drones)
+
+    def move_drones():
+        
 
     def render_lines(self):
         for line in self.lines:
@@ -112,7 +124,6 @@ class DisplayScreen:
 
             self.render_lines()
             self.render_circles()
-            self.render_drones()
 
             pygame.display.flip()
             keys = pygame.key.get_pressed()
@@ -148,6 +159,15 @@ class DisplayScreen:
 
         return int(posX), int(posY)
 
+    def is_full(element: Hub | Connection):
+        if type(element) == Hub:
+            return element.max_drones - element.nb_drones_in > 0
+        elif type(element) == Connection:
+            return element.max_link_capacity - element.nb_drones_in > 0
+        else:
+            raise ValueError("Wrong type passed, must be Hub or Connection")
+
+
     def get_img_drone(self):
         original_img = pygame.image.load("assets/drone.png").convert_alpha()
         self.drone_img = pygame.transform.scale(original_img, (self.hub_size*2, self.hub_size*2))
@@ -173,8 +193,8 @@ class DisplayScreen:
     def quit() -> None:
         pygame.font.quit()
 
-def display(input_data: Input_Data):
-    game = DisplayScreen(input_data)
+def display(input_data: Input_Data, path: List[Hub]):
+    game = DisplayScreen(input_data, path)
     game.get_all_circles()
     game.get_all_lines()
     game.get_img_drone()
