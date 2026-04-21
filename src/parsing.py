@@ -23,12 +23,14 @@ class Hub(BaseModel):
     color: str = Field(default="gray")
     max_drones: int = Field(default=1)
     score: int = math.inf
+    nb_drones_in: int = Field(default=0)
 
 
 class Connection(BaseModel):
     hub1: Hub
     hub2: Hub
     max_link_capacity: int = Field(default=1)
+    nb_drones_in: int = Field(default=0)
 # The connection syntax forbids dashes in zone names.
 
 
@@ -50,6 +52,7 @@ class Input_Data(BaseModel):
                                       "one end hub")
             if hub.is_start and not is_start:
                 is_start = True
+                hub.nb_drones_in = self.nb_drones
             if hub.is_end and not is_end:
                 is_end = True
         return self
