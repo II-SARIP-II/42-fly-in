@@ -23,14 +23,14 @@ class Hub(BaseModel):
     color: str = Field(default="gray")
     max_drones: int = Field(default=1)
     score: int = math.inf
-    nb_drones_in: int = Field(default=0)
+    nb_drones_in: List[Any] = Field(default=[])
 
 
 class Connection(BaseModel):
     hub1: Hub
     hub2: Hub
     max_link_capacity: int = Field(default=1)
-    nb_drones_in: int = Field(default=0)
+    nb_drones_in: List[Any] = Field(default=[])
 # The connection syntax forbids dashes in zone names.
 
 
@@ -52,7 +52,6 @@ class Input_Data(BaseModel):
                                       "one end hub")
             if hub.is_start and not is_start:
                 is_start = True
-                hub.nb_drones_in = self.nb_drones
             if hub.is_end and not is_end:
                 is_end = True
         return self
@@ -91,7 +90,7 @@ def create_hub_metadata(data: str,
     return data, hub_data
 
 
-def create_hub(line: str) -> Hub:
+def create_hub(line: str, nb_drones: int) -> Hub:
     title, data = line.split(": ")
     hub_data: Dict[str, Any] = {
         "is_start": False,
@@ -102,6 +101,11 @@ def create_hub(line: str) -> Hub:
                          " start_hub, hub, end_hub for hubs creations")
     if title == "start_hub":
         hub_data["is_start"] = True
+        hub_data["nb_drones_in"] = []
+        from .display_graph import drones
+        for _ in range(nb_drones):
+            drone = drones()
+            hub_data["nb_drones_in"].append(drone)
     if title == "end_hub":
         hub_data["is_end"] = True
     if " [" in data:
@@ -192,7 +196,7 @@ def read_file(filename: str) -> Input_Data:
                 raise ValueError(f"Error in line {idx+1}: Input Error: "
                                  "The file must start with nb_drones: X")
             try:
-                hubs.append(create_hub(line))
+                hubs.append(create_hub(line, nb_drone))
             except Exception as e:
                 raise ValueError(f"Error in line {idx+1}: {e}")
 

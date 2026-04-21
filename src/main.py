@@ -1,5 +1,5 @@
 from .parsing import parsing, Hub, Connection, Input_Data
-from .DisplayGraph import display
+from .display_graph import display
 from .dijkstra import dijkstra
 
 
