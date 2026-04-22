@@ -106,9 +106,8 @@ def create_hub(line: str, nb_drones: int) -> Hub:
     if title == "start_hub":
         hub_data["is_start"] = True
         hub_data["nb_drones_in"] = []
-        from .display_graph import drones
         for _ in range(nb_drones):
-            drone = drones()
+            drone = Drone()
             hub_data["nb_drones_in"].append(drone)
     if title == "end_hub":
         hub_data["is_end"] = True

@@ -3,7 +3,7 @@ from typing import List
 from .parsing import Hub, Connection, Input_Data, ZoneType, Drone
 
 class DisplayScreen:
-    def __init__(self, input_data: Input_Data, shortest_path: List[Hub]):
+    def __init__(self, input_data: Input_Data):
         pygame.init()
         pygame.font.init()
         self.font = pygame.font.SysFont('freesansbold', 10)
