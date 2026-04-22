@@ -41,11 +41,12 @@ class DisplayScreen:
 
                 if connection.hub2 == current_hub:
                     free_space = current_hub.max_drones - len(current_hub.nb_drones_in)
-                    if current_hub.is_end: free_space = 999 
+                    if current_hub.is_end:
+                        free_space = 999 
 
                     while free_space > 0 and len(connection.nb_drones_in) > 0:
-                        drone = connection.nb_drones_in.pop(0) # On sort le drone de la ligne
-                        current_hub.nb_drones_in.append(drone) # On le met dans le hub
+                        drone = connection.nb_drones_in.pop(0)
+                        current_hub.nb_drones_in.append(drone)
                         free_space -= 1
                         moved_any = True
 
@@ -54,8 +55,8 @@ class DisplayScreen:
                     line_free_space = connection.max_link_capacity - len(connection.nb_drones_in)
 
                     while line_free_space > 0 and len(source_hub.nb_drones_in) > 0:
-                        drone = source_hub.nb_drones_in.pop(0) # On sort le drone du hub précédent
-                        connection.nb_drones_in.append(drone) # On le met sur la ligne
+                        drone = source_hub.nb_drones_in.pop(0)
+                        connection.nb_drones_in.append(drone)
                         line_free_space -= 1
                         moved_any = True
 

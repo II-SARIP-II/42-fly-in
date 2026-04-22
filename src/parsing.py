@@ -31,7 +31,7 @@ class Connection(BaseModel):
     hub2: Hub
     max_link_capacity: int = Field(default=1)
     nb_drones_in: List[Any] = Field(default=[])
-# The connection syntax forbids dashes in zone names.
+    # The connection syntax forbids dashes in zone names.
 
 
 class Input_Data(BaseModel):
