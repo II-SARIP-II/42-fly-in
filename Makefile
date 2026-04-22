@@ -9,7 +9,7 @@ uninstall:
 	pip uninstall pydantic numpy
 
 run:
-	@python -m src maps/easy/03_basic_capacity.txt
+	@python -m src maps/medium/02_circular_loop.txt
 
 debug:
 	uv run python -m pdb src/__main__.py

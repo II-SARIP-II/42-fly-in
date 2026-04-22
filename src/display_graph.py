@@ -1,12 +1,6 @@
 import pygame
 from typing import List
-from .parsing import Hub, Connection, Input_Data, ZoneType
-
-
-class drones:
-    def __init__(self):
-        self.wait_time = 0
-
+from .parsing import Hub, Connection, Input_Data, ZoneType, Drone
 
 class DisplayScreen:
     def __init__(self, input_data: Input_Data, shortest_path: List[Hub]):
@@ -19,48 +13,32 @@ class DisplayScreen:
         self.title = pygame.display.set_caption('Fly-In by Pgougne')
         self.clock = pygame.time.Clock()
         self.running = True
-        self.dt = 0
         self.input_data = input_data
         self.max_x = self.get_max_x()
         self.max_y = self.get_max_y()
         self.circles = []
         self.lines = []
-        self.drones = []
+        self.current_tick = 0
         self.hub_size = 10
         self.start = pygame.Vector2(0,0)
         self.end = pygame.Vector2(0,0)
-        self.path = shortest_path
 
     def move_drones(self) -> bool:
-        rev_path = self.path[::-1]
-        moved_any = False
-        for i in range(len(rev_path)):
-            current_hub = rev_path[i]
-
-            for connection in self.input_data.connections:
-
-                if connection.hub2 == current_hub:
-                    free_space = current_hub.max_drones - len(current_hub.nb_drones_in)
-                    if current_hub.is_end:
-                        free_space = 999 
-
-                    while free_space > 0 and len(connection.nb_drones_in) > 0:
-                        drone = connection.nb_drones_in.pop(0)
-                        current_hub.nb_drones_in.append(drone)
-                        free_space -= 1
-                        moved_any = True
-
-                if connection.hub2 == current_hub:
-                    source_hub = connection.hub1
-                    line_free_space = connection.max_link_capacity - len(connection.nb_drones_in)
-
-                    while line_free_space > 0 and len(source_hub.nb_drones_in) > 0:
-                        drone = source_hub.nb_drones_in.pop(0)
-                        connection.nb_drones_in.append(drone)
-                        line_free_space -= 1
-                        moved_any = True
-
-        return moved_any
+        lst_pos_drone = []
+        for drone in self.input_data.lst_drones:
+            curr_pos = drone.path[self.current_tick]
+            if curr_pos in lst_pos_drone:
+                lst_pos_drone[curr_pos] += 1
+            else:
+                lst_pos_drone.append({curr_pos: 1})
+        for drone in lst_pos_drone:
+            pos = pygame.Vector2(self.get_hub_pos(drone.x, drone.y))
+            self.screen.blit(self.drone_img, pos)
+            txt_nb_drones = self.font.render(str(len(lst_pos_drone[drone])), True, (0, 0, 0))
+            rect_nb_drones = txt_nb_drones.get_rect()
+            x, y = pos
+            rect_nb_drones.center = (x + self.hub_size, y + self.hub_size*2)
+            self.screen.blit(txt_nb_drones, rect_nb_drones)
 
     def render_circles(self):
         for hub in self.input_data.hubs:
@@ -73,14 +51,6 @@ class DisplayScreen:
             x, y = pos
             textRect1.center = (x, y - self.hub_size*2)
             self.screen.blit(text1, textRect1)
-
-            # Drones
-            if len(hub.nb_drones_in) > 0:
-                self.screen.blit(self.drone_img, pos)
-                txt_nb_drones = self.font.render(str(len(hub.nb_drones_in)), True, (0, 0, 0))
-                rect_nb_drones = txt_nb_drones.get_rect()
-                rect_nb_drones.center = (x + self.hub_size, y + self.hub_size*2)
-                self.screen.blit(txt_nb_drones, rect_nb_drones)
 
     def render_lines(self):
         for connection in self.input_data.connections:
@@ -97,15 +67,7 @@ class DisplayScreen:
             textRect1.center = (px, py-10)
             self.screen.blit(text, textRect1)
 
-            if len(connection.nb_drones_in) > 0:
-                self.screen.blit(self.drone_img, (px, py-10))
-                txt_nb_drones = self.font.render(str(len(connection.nb_drones_in)), True, (0, 0, 0))
-                rect_nb_drones = txt_nb_drones.get_rect()
-                rect_nb_drones.center = (px + self.hub_size, py + self.hub_size*2)
-                self.screen.blit(txt_nb_drones, rect_nb_drones)
-
     def run(self):
-        count = 0
         while self.running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -122,10 +84,9 @@ class DisplayScreen:
                 self.running = False
 
             if self.move_drones():
-                count += 1
+                self.current_tick += 1
 
             self.clock.tick(2)
-            print(count)
 
         pygame.quit()
 
@@ -188,6 +149,7 @@ class DisplayScreen:
 
     def quit() -> None:
         pygame.font.quit()
+
 
 def display(input_data: Input_Data, path: List[Hub]):
     game = DisplayScreen(input_data, path)

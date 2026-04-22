@@ -22,7 +22,7 @@ class Hub(BaseModel):
     zone: ZoneType = Field(default=ZoneType.NORMAL)
     color: str = Field(default="gray")
     max_drones: int = Field(default=1)
-    score: int = math.inf
+    # scores: Dict[tuple[str, int], int] = {}
     nb_drones_in: List[Any] = Field(default=[])
 
 
@@ -34,8 +34,12 @@ class Connection(BaseModel):
     # The connection syntax forbids dashes in zone names.
 
 
+class Drone(BaseModel):
+    path: List[Hub] = Field(default=[])
+
+
 class Input_Data(BaseModel):
-    nb_drones: int = Field(ge=0)
+    lst_drones: List[Drone] = Field(default=[])
     hubs: List[Hub] = Field(default=[])
     connections: List[Connection] = Field(default=[])
 
@@ -161,32 +165,35 @@ def create_connection(line: str,
     return Connection(hub1=hub1, hub2=hub2, max_link_capacity=max_link)
 
 
-def drone_line(line: str, idx: int, nb_drone: int, set_drone: bool) -> int:
+def drone_line(line: str, idx: int, lst_drones: List[Drone], set_drone: bool) -> int:
     if set_drone:
         raise ValueError(f"Error in line {idx}: Input Error: "
                          "nb_drones already set")
     try:
         nb_drone = int(line.split(":")[1])
+        for _ in range(nb_drone):
+            new_drone = Drone()
+            lst_drones.append(new_drone)
     except Exception:
         raise ValueError(f"Error in line {idx}: Input Error: "
                          "nb_drones must be an integer")
     if nb_drone < 0:
         raise ValueError(f"Error in line {idx}: Input Error: "
                          "nb_drones must be positive")
-    return nb_drone
+    return lst_drones
 
 
 def read_file(filename: str) -> Input_Data:
     with open(filename, 'r') as f:
         lst = f.read().splitlines()
     set_drone = False
-    nb_drone = -1
+    lst_drones = []
     hubs: List[Hub] = []
     connections: List[Connection] = []
     for idx, line in enumerate(lst):
         if line.startswith("nb_drones: "):
             try:
-                nb_drone = drone_line(line, idx+1, nb_drone, set_drone)
+                lst_drones = drone_line(line, idx+1, lst_drones, set_drone)
                 set_drone = True
             except Exception as e:
                 raise ValueError(e)
@@ -196,7 +203,7 @@ def read_file(filename: str) -> Input_Data:
                 raise ValueError(f"Error in line {idx+1}: Input Error: "
                                  "The file must start with nb_drones: X")
             try:
-                hubs.append(create_hub(line, nb_drone))
+                hubs.append(create_hub(line, len(lst_drones)))
             except Exception as e:
                 raise ValueError(f"Error in line {idx+1}: {e}")
 
@@ -211,11 +218,11 @@ def read_file(filename: str) -> Input_Data:
 
         elif line.startswith("#") or line == "":
             pass
-        
+
         else:
             raise ValueError(f"Error in line {idx+1}: unknown line")
 
-    return Input_Data(nb_drones=nb_drone, hubs=hubs, connections=connections)
+    return Input_Data(lst_drones=lst_drones, hubs=hubs, connections=connections)
 
 
 def parsing() -> Input_Data:
