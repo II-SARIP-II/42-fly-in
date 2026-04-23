@@ -1,7 +1,6 @@
-from .parsing import Input_Data, Hub, Connection
-from typing import Dict, List
+from .parsing import Input_Data, Hub
+from typing import List
 import heapq
-from .parsing import Drone
 
 
 class dijkstra:
@@ -12,6 +11,8 @@ class dijkstra:
         self.input_data = input_data
 
     def is_place_available(self, hub, time):
+        if hub.is_start or hub.is_end:
+            return True
         drones_prevus = self.reservation[hub.name].get(time, 0)
         return drones_prevus < hub.max_drones
 
@@ -26,7 +27,7 @@ class dijkstra:
                              "and an end to the graph")
 
     def reserve_path(self, path: List[Hub]):
-        for hub, t in enumerate(path):
+        for t, hub in enumerate(path):
             if t not in self.reservation[hub.name]:
                 self.reservation[hub.name][t] = 0
             self.reservation[hub.name][t] += 1
@@ -42,25 +43,32 @@ class dijkstra:
         neighbors.append(hub)
         return neighbors
 
-    def reconstruct_path(self, parents, current_hub, current_time):
+    def reconstruct_path(self, parents, goal_hub, goal_time):
+        hub_map = {hub.name: hub for hub in self.input_data.hubs}
+
         path = []
-        curr = (current_hub, current_time)
-        while curr in parents:
-            path.append(curr[0])
-            curr = parents[curr]
-        path.append(curr[0])
+        curr_name = goal_hub.name
+        curr_time = goal_time
+
+        while (curr_name, curr_time) in parents:
+            path.append(hub_map[curr_name])
+            curr_name, curr_time = parents[(curr_name, curr_time)]
+
+        path.append(hub_map[curr_name])
         return path[::-1]
 
     def find_path_for_one_drone(self, start_hub, goal_hub):
-        # queue contient des tuples (hub, temps)
-        queue = [(0, 0, start_hub)]
+        # On ajoute un compteur pour départager les égalités
+        counter = 0
+        # Tuple: (priorité, temps, index_unique, objet_hub)
+        queue = [(0, 0, counter, start_hub)]
         scores = {(start_hub.name, 0): 0}
-        parents = {} # Pour reconstruire le chemin plus tard
+        parents = {}
 
         while queue:
-            _, curr_time, curr_hub = heapq.heappop(queue)
+            _, curr_time, _, curr_hub = heapq.heappop(queue)
 
-            if curr_hub == goal_hub:
+            if curr_hub.name == goal_hub.name:
                 return self.reconstruct_path(parents, curr_hub, curr_time)
 
             if curr_time > 100:
@@ -70,11 +78,17 @@ class dijkstra:
                 new_time = curr_time + 1
 
                 if self.is_place_available(neighbor, new_time):
-                    old_score = scores.get((neighbor.name, new_time), float('inf'))
+                    state_key = (neighbor.name, new_time)
+                    old_score = scores.get(state_key, float('inf'))
+
                     if new_time < old_score:
-                        scores[(neighbor.name, new_time)] = new_time
-                        parents[(neighbor, new_time)] = (curr_hub, curr_time)
-                        heapq.heappush(queue, (new_time, new_time, neighbor))
+                        scores[state_key] = new_time
+                        parents[state_key] = (curr_hub.name, curr_time)
+
+                        # On incrémente le compteur à chaque push
+                        counter += 1
+                        heapq.heappush(queue, (new_time, new_time,
+                                               counter, neighbor))
         return None
 
     def solve(self):
@@ -82,15 +96,13 @@ class dijkstra:
 
         for drone in self.input_data.lst_drones:
             path = self.find_path_for_one_drone(self.start, self.goal)
-
             if path:
                 self.reserve_path(path)
-                drone.path == path
+                drone.path = path
             else:
                 raise ValueError("Impossible de faire passer tous les drones")
 
         return self.input_data
-
 
 
 def get_path_drones(input_data: Input_Data):

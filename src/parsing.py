@@ -3,7 +3,6 @@ from enum import Enum
 from typing import List, Dict, Any
 from typing_extensions import Self
 import sys
-import math
 
 
 class ZoneType(Enum):
@@ -164,7 +163,11 @@ def create_connection(line: str,
     return Connection(hub1=hub1, hub2=hub2, max_link_capacity=max_link)
 
 
-def drone_line(line: str, idx: int, lst_drones: List[Drone], set_drone: bool) -> int:
+def drone_line(line: str,
+               idx: int,
+               lst_drones: List[Drone],
+               set_drone: bool
+               ) -> int:
     if set_drone:
         raise ValueError(f"Error in line {idx}: Input Error: "
                          "nb_drones already set")
@@ -221,7 +224,9 @@ def read_file(filename: str) -> Input_Data:
         else:
             raise ValueError(f"Error in line {idx+1}: unknown line")
 
-    return Input_Data(lst_drones=lst_drones, hubs=hubs, connections=connections)
+    return Input_Data(lst_drones=lst_drones,
+                      hubs=hubs,
+                      connections=connections)
 
 
 def parsing() -> Input_Data:
@@ -230,7 +235,7 @@ def parsing() -> Input_Data:
                          "'python3 -m src path/to/input_file.txt'")
     try:
         input_data: Input_Data = read_file(sys.argv[1])
-        return(input_data)
+        return input_data
     except ValidationError as e:
         raise ValidationError(e.errors()[0]['msg'])
     except Exception as e:
