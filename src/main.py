@@ -3,7 +3,7 @@ from .display_graph import display
 from .dijkstra import get_path_drones
 
 
-def main():
+def main() -> None:
     input_data: Input_Data = parsing()
     input_data = get_path_drones(input_data)
     display(input_data)

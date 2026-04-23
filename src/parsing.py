@@ -167,7 +167,7 @@ def drone_line(line: str,
                idx: int,
                lst_drones: List[Drone],
                set_drone: bool
-               ) -> int:
+               ) -> List[Drone]:
     if set_drone:
         raise ValueError(f"Error in line {idx}: Input Error: "
                          "nb_drones already set")
@@ -189,7 +189,7 @@ def read_file(filename: str) -> Input_Data:
     with open(filename, 'r') as f:
         lst = f.read().splitlines()
     set_drone = False
-    lst_drones = []
+    lst_drones: List[Drone] = []
     hubs: List[Hub] = []
     connections: List[Connection] = []
     for idx, line in enumerate(lst):

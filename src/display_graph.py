@@ -1,5 +1,6 @@
 import pygame
 from .parsing import Hub, Connection, Input_Data
+from typing import Dict, Any
 
 
 class DisplayScreen:
@@ -17,15 +18,13 @@ class DisplayScreen:
         self.input_data = input_data
         self.max_x = self.get_max_x()
         self.max_y = self.get_max_y()
-        self.circles = []
-        self.lines = []
         self.current_tick = 0
         self.hub_size = 10
         self.start = pygame.Vector2(0, 0)
         self.end = pygame.Vector2(0, 0)
 
     def move_drones(self) -> bool:
-        counts_per_hub = {}
+        counts_per_hub: Dict[str, int] = {}
         any_drone_moving = False
 
         for drone in self.input_data.lst_drones:
@@ -56,7 +55,7 @@ class DisplayScreen:
 
         return any_drone_moving
 
-    def render_circles(self):
+    def render_circles(self) -> None:
         for hub in self.input_data.hubs:
             pos = pygame.Vector2(self.get_hub_pos(hub.x, hub.y))
             pygame.draw.circle(self.screen, self._get_valid_color(hub.color),
@@ -68,7 +67,7 @@ class DisplayScreen:
             textRect1.center = (x, y - self.hub_size*2)
             self.screen.blit(text1, textRect1)
 
-    def render_lines(self):
+    def render_lines(self) -> None:
         for connection in self.input_data.connections:
             start = pygame.Vector2(self.get_hub_pos(connection.hub1.x,
                                                     connection.hub1.y))
@@ -85,7 +84,7 @@ class DisplayScreen:
             textRect1.center = (px, py-10)
             self.screen.blit(text, textRect1)
 
-    def run(self):
+    def run(self) -> None:
         while self.running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -108,19 +107,19 @@ class DisplayScreen:
 
         pygame.quit()
 
-    def get_max_x(self) -> int:
+    def get_max_x(self) -> Any:
         lsthubx = [hub.x for hub in self.input_data.hubs]
         max_int = max(lsthubx)
         min_int = min(lsthubx)
         return max_int - min_int
 
-    def get_max_y(self) -> int:
+    def get_max_y(self) -> Any:
         lsthuby = [hub.y for hub in self.input_data.hubs]
         max_int = max(lsthuby)
         min_int = min(lsthuby)
         return max_int - min_int
 
-    def get_hub_pos(self, x, y) -> tuple[int, int]:
+    def get_hub_pos(self, x: int, y: int) -> tuple[int, int]:
         padding = 50
         drawable_w = self.screen_size.current_w - 150 - (padding * 2)
         drawable_h = self.screen_size.current_h - 100 - (padding * 2)
@@ -134,16 +133,16 @@ class DisplayScreen:
         return int(posX), int(posY)
 
     @staticmethod
-    def is_full_hub(element: Hub) -> bool:
+    def is_full_hub(element: Hub) -> Any:
         if element.is_end:
             return False
         return element.max_drones - element.nb_drones_in < 0
 
     @staticmethod
-    def is_full_connection(element: Connection):
+    def is_full_connection(element: Connection) -> Any:
         return element.max_link_capacity - element.nb_drones_in < 0
 
-    def get_img_drone(self):
+    def get_img_drone(self) -> None:
         original_img = pygame.image.load("assets/drone.png").convert_alpha()
         self.drone_img = pygame.transform.scale(
             original_img,
@@ -168,13 +167,9 @@ class DisplayScreen:
         except ValueError:
             return "gray"
 
-    def quit() -> None:
-        pygame.font.quit()
 
-
-def display(input_data: Input_Data):
+def display(input_data: Input_Data) -> None:
     game = DisplayScreen(input_data)
 
     game.get_img_drone()
     game.run()
-    # game.quit()
