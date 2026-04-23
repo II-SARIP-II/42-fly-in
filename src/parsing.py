@@ -26,6 +26,7 @@ class Hub(BaseModel):
 
 
 class Connection(BaseModel):
+    connection_id: int
     hub1: Hub
     hub2: Hub
     max_link_capacity: int = Field(default=1)
@@ -34,6 +35,7 @@ class Connection(BaseModel):
 
 
 class Drone(BaseModel):
+    drone_id: int
     path: List[Hub] = Field(default=[])
 
 
@@ -156,11 +158,13 @@ def create_connection(line: str,
         raise ValueError(f"Input Error: {data}, one or more hubs are invalid")
     hub1 = hub_map[name1]
     hub2 = hub_map[name2]
+    next_id = 0
     for conn in connections:
+        next_id = conn.connection_id + 1
         existing_names = {conn.hub1.name, conn.hub2.name}
         if {name1, name2} == existing_names:
             raise ValueError(f"Input Error: {data}, connection already exists")
-    return Connection(hub1=hub1, hub2=hub2, max_link_capacity=max_link)
+    return Connection(hub1=hub1, hub2=hub2, max_link_capacity=max_link, connection_id=next_id)
 
 
 def drone_line(line: str,

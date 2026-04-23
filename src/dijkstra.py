@@ -107,6 +107,9 @@ class dijkstra:
             if path:
                 self.reserve_path(path)
                 drone.path = path
+                for hub in path:
+                    print(hub.name)
+                print("\n\n\n")
             else:
                 raise ValueError("Impossible de faire passer tous les drones")
 

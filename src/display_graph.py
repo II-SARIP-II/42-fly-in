@@ -103,7 +103,7 @@ class DisplayScreen:
             if keys[pygame.K_ESCAPE] or keys[pygame.K_q]:
                 self.running = False
 
-            self.clock.tick(2)
+            self.clock.tick(1)
 
         pygame.quit()
 
