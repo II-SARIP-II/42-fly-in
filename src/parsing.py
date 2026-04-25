@@ -95,7 +95,7 @@ def create_hub_metadata(data: str,
     return data, hub_data
 
 
-def create_hub(line: str, nb_drones: int) -> Hub:
+def create_hub(line: str, lst_drones: List[Drone]) -> Hub:
     title, data = line.split(": ")
     hub_data: Dict[str, Any] = {
         "is_start": False,
@@ -106,10 +106,7 @@ def create_hub(line: str, nb_drones: int) -> Hub:
                          " start_hub, hub, end_hub for hubs creations")
     if title == "start_hub":
         hub_data["is_start"] = True
-        hub_data["nb_drones_in"] = []
-        for _ in range(nb_drones):
-            drone = Drone()
-            hub_data["nb_drones_in"].append(drone)
+        hub_data["nb_drones_in"] = lst_drones
     if title == "end_hub":
         hub_data["is_end"] = True
     if " [" in data:
@@ -176,9 +173,10 @@ def drone_line(line: str,
         raise ValueError(f"Error in line {idx}: Input Error: "
                          "nb_drones already set")
     try:
-        nb_drone = int(line.split(":")[1])
-        for _ in range(nb_drone):
-            new_drone = Drone()
+        nb_drone = int(line.split(":")[1].strip())
+        print(nb_drone)
+        for i in range(nb_drone):
+            new_drone = Drone(drone_id=i)
             lst_drones.append(new_drone)
     except Exception:
         raise ValueError(f"Error in line {idx}: Input Error: "
@@ -209,7 +207,7 @@ def read_file(filename: str) -> Input_Data:
                 raise ValueError(f"Error in line {idx+1}: Input Error: "
                                  "The file must start with nb_drones: X")
             try:
-                hubs.append(create_hub(line, len(lst_drones)))
+                hubs.append(create_hub(line, lst_drones))
             except Exception as e:
                 raise ValueError(f"Error in line {idx+1}: {e}")
 
