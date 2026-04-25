@@ -3,6 +3,7 @@ from enum import Enum
 from typing import List, Dict, Any
 from typing_extensions import Self
 import sys
+import math
 
 
 class ZoneType(Enum):
@@ -21,6 +22,7 @@ class Hub(BaseModel):
     zone: ZoneType = Field(default=ZoneType.NORMAL)
     color: str = Field(default="gray")
     max_drones: int = Field(default=1)
+    score: int = Field(default=math.inf)
     # scores: Dict[tuple[str, int], int] = {}
     nb_drones_in: List[Any] = Field(default=[])
 
@@ -31,6 +33,7 @@ class Connection(BaseModel):
     hub2: Hub
     max_link_capacity: int = Field(default=1)
     nb_drones_in: List[Any] = Field(default=[])
+    score: int = Field(default=math.inf)
     # The connection syntax forbids dashes in zone names.
 
 
