@@ -96,6 +96,7 @@ class DisplayScreen:
             self.render_circles()
 
             if self.move_drones():
+                print(self.current_tick)
                 self.current_tick += 1
 
             pygame.display.flip()

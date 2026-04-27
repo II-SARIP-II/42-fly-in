@@ -44,9 +44,6 @@ class Paths:
         else:
             self.reservation_connection[connection.connection_id][time] += 1
 
-    def get_parent():
-        pass
-
     def get_available_neighbor(self, curr_hub: Hub, curr_time: int):
         neighbors_data = []
         for conn in self.input_data.connections:
