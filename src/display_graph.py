@@ -19,9 +19,11 @@ class DisplayScreen:
         self.max_x = self.get_max_x()
         self.max_y = self.get_max_y()
         self.current_tick = 0
-        self.hub_size = 10
+        self.hub_size = 40
         self.start = pygame.Vector2(0, 0)
         self.end = pygame.Vector2(0, 0)
+        self.is_ant = False
+
 
     def move_drones(self) -> bool:
         counts_per_hub: Dict[str, int] = {}
@@ -44,10 +46,14 @@ class DisplayScreen:
 
         for name, count in counts_per_hub.items():
             hub = hub_map[name]
-            print(name)
-            pos = pygame.Vector2(self.get_hub_pos(hub.x, hub.y))
-            rect = self.drone_img.get_rect(center=(pos.x, pos.y))
-            self.screen.blit(self.drone_img, rect)
+            if not self.is_ant:
+                pos = pygame.Vector2(self.get_hub_pos(hub.x, hub.y))
+                rect = self.drone_img.get_rect(center=(pos.x, pos.y))
+                self.screen.blit(self.drone_img, rect)
+            else:
+                pos = pygame.Vector2(self.get_hub_pos(hub.x, hub.y))
+                rect = self.ant.get_rect(center=(pos.x, pos.y))
+                self.screen.blit(self.ant, rect)
 
             if count > 0:
                 txt_nb = self.font.render(str(count), True, (0, 0, 0))
@@ -57,15 +63,20 @@ class DisplayScreen:
 
     def render_circles(self) -> None:
         for hub in self.input_data.hubs:
-            pos = pygame.Vector2(self.get_hub_pos(hub.x, hub.y))
-            pygame.draw.circle(self.screen, self._get_valid_color(hub.color),
-                               pos, self.hub_size)
-            txt = "md" + str(hub.max_drones)
-            text1 = self.font.render(txt, True, (0, 0, 0))
-            textRect1 = text1.get_rect()
-            x, y = pos
-            textRect1.center = (x, y - self.hub_size*2)
-            self.screen.blit(text1, textRect1)
+
+            if not self.is_ant:
+                pos = pygame.Vector2(self.get_hub_pos(hub.x, hub.y))
+                pygame.draw.circle(self.screen, self._get_valid_color(hub.color),
+                                   pos, self.hub_size)
+                txt = "md" + str(hub.max_drones)
+                text1 = self.font.render(txt, True, (0, 0, 0))
+                textRect1 = text1.get_rect()
+                x, y = pos
+                textRect1.center = (x, y - self.hub_size*2)
+                self.screen.blit(text1, textRect1)
+            else:
+                pos = pygame.Vector2(self.get_hub_pos(hub.x - (self.hub_size/2), hub.y - (self.hub_size/2)))
+                self.screen.blit(self.anthill, pos)
 
     def render_lines(self) -> None:
         for connection in self.input_data.connections:
@@ -89,9 +100,10 @@ class DisplayScreen:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
-
-            self.screen.fill("white")
-
+            if not self.is_ant:
+                self.screen.fill("white")
+            else:
+                self.screen.blit(self.sand, (0, 0))
             self.render_lines()
             self.render_circles()
 
@@ -103,6 +115,8 @@ class DisplayScreen:
             keys = pygame.key.get_pressed()
             if keys[pygame.K_ESCAPE] or keys[pygame.K_q]:
                 self.running = False
+            if keys[pygame.K_f]:
+                self.is_ant = not self.is_ant
 
             self.clock.tick(1)
 
@@ -133,21 +147,22 @@ class DisplayScreen:
 
         return int(posX), int(posY)
 
-    @staticmethod
-    def is_full_hub(element: Hub) -> Any:
-        if element.is_end:
-            return False
-        return element.max_drones - element.nb_drones_in < 0
-
-    @staticmethod
-    def is_full_connection(element: Connection) -> Any:
-        return element.max_link_capacity - element.nb_drones_in < 0
-
     def get_img_drone(self) -> None:
         original_img = pygame.image.load("assets/drone.png").convert_alpha()
         self.drone_img = pygame.transform.scale(
-            original_img,
-            (self.hub_size*2, self.hub_size*2))
+            original_img, (self.hub_size*2, self.hub_size*2))
+
+    
+    def get_ants_img(self) -> None:
+        sand = pygame.image.load("assets/sand-bg.jpg").convert_alpha()
+        ant = pygame.image.load("assets/ant.png").convert_alpha()
+        anthill = pygame.image.load("assets/ant-hill.png").convert_alpha()
+        banana = pygame.image.load("assets/banana.png").convert_alpha()
+        self.sand = pygame.transform.scale(sand, (self.screen_size.current_w - 150, self.screen_size.current_h - 100))
+        self.ant = pygame.transform.scale(ant, (self.hub_size*2, self.hub_size*2))
+        self.anthill = pygame.transform.scale(anthill, (self.hub_size*2, self.hub_size*2))
+        self.banana = pygame.transform.scale(banana, (self.hub_size*2, self.hub_size*2))
+
 
     @staticmethod
     def _get_valid_color(color_name: str | None) -> str:
@@ -173,4 +188,5 @@ def display(input_data: Input_Data) -> None:
     game = DisplayScreen(input_data)
 
     game.get_img_drone()
+    game.get_ants_img()
     game.run()
