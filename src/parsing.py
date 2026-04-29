@@ -177,7 +177,6 @@ def drone_line(line: str,
                          "nb_drones already set")
     try:
         nb_drone = int(line.split(":")[1].strip())
-        print(nb_drone)
         for i in range(nb_drone):
             new_drone = Drone(drone_id=i)
             lst_drones.append(new_drone)

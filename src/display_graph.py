@@ -63,9 +63,8 @@ class DisplayScreen:
 
     def render_circles(self) -> None:
         for hub in self.input_data.hubs:
-
+            pos = pygame.Vector2(self.get_hub_pos(hub.x, hub.y))
             if not self.is_ant:
-                pos = pygame.Vector2(self.get_hub_pos(hub.x, hub.y))
                 pygame.draw.circle(self.screen, self._get_valid_color(hub.color),
                                    pos, self.hub_size)
                 txt = "md" + str(hub.max_drones)
@@ -75,8 +74,12 @@ class DisplayScreen:
                 textRect1.center = (x, y - self.hub_size*2)
                 self.screen.blit(text1, textRect1)
             else:
-                pos = pygame.Vector2(self.get_hub_pos(hub.x - (self.hub_size/2), hub.y - (self.hub_size/2)))
-                self.screen.blit(self.anthill, pos)
+                x, y = pos
+                print(x, y)
+                if not hub.is_end: 
+                    self.screen.blit(self.anthill, (x - (self.hub_size), y  - (self.hub_size)))
+                else: 
+                    self.screen.blit(self.banana, (x - (self.hub_size), y  - (self.hub_size)))
 
     def render_lines(self) -> None:
         for connection in self.input_data.connections:
@@ -96,6 +99,7 @@ class DisplayScreen:
             self.screen.blit(text, textRect1)
 
     def run(self) -> None:
+        frame = 0
         while self.running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -106,10 +110,11 @@ class DisplayScreen:
                 self.screen.blit(self.sand, (0, 0))
             self.render_lines()
             self.render_circles()
-
             if self.move_drones():
-                print(self.current_tick)
-                self.current_tick += 1
+                if frame == 60:
+                    print(self.current_tick)
+                    self.current_tick += 1
+                    frame = 0 
 
             pygame.display.flip()
             keys = pygame.key.get_pressed()
@@ -118,7 +123,9 @@ class DisplayScreen:
             if keys[pygame.K_f]:
                 self.is_ant = not self.is_ant
 
-            self.clock.tick(1)
+            frame += 1
+
+            self.clock.tick(30)
 
         pygame.quit()
 
@@ -156,6 +163,7 @@ class DisplayScreen:
     def get_ants_img(self) -> None:
         sand = pygame.image.load("assets/sand-bg.jpg").convert_alpha()
         ant = pygame.image.load("assets/ant.png").convert_alpha()
+        ant = pygame.transform.rotate(ant, -90)
         anthill = pygame.image.load("assets/ant-hill.png").convert_alpha()
         banana = pygame.image.load("assets/banana.png").convert_alpha()
         self.sand = pygame.transform.scale(sand, (self.screen_size.current_w - 150, self.screen_size.current_h - 100))

@@ -83,8 +83,6 @@ class Paths:
             else:
                 curr_time += 1
                 path.append(curr_place)
-        print("\n\nhub:", self.reservation_hub)
-        print("\n\ncon:", self.reservation_connection)
         return path
 
     def init_dijkstra(self):
@@ -135,8 +133,6 @@ def dijkstra(input_data: Input_Data):
         drone_path = path.get_path()
         if path:
             drone.path = drone_path
-            for hub in drone_path:
-                print(hub.name)
         else:
             raise ValueError("An error occured in the algorythm")
     return input_data
