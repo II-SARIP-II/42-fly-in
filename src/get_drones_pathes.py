@@ -80,6 +80,8 @@ class Paths:
                 curr_place = next_hub
                 curr_time += delta_t
                 path.append(curr_place)
+                if curr_place.zone == ZoneType.RESTRICTED:
+                    path.append(curr_place)
             else:
                 curr_time += 1
                 path.append(curr_place)
@@ -106,7 +108,7 @@ class Paths:
             for conn in self.input_data.connections:
                 if conn.hub2 == curr_hub:
                     add_val = 1
-                    if curr_hub.zone == ZoneType.RESTRICTED:
+                    if conn.hub1.zone == ZoneType.RESTRICTED:
                         add_val = 2
                     elif curr_hub.zone == ZoneType.PRIORITY:
                         add_val = 0.4
