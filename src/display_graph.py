@@ -45,10 +45,12 @@ class DisplayScreen:
                 current_pos = pos_a
                 counts_per_hub[hub_b.name] = counts_per_hub.get(hub_b.name, 0) + 1
             else:
-                if is_restricted_move:
+                if is_restricted_move and TICKS_PER_UPDATE > 0:
                     t = frame / (TICKS_PER_UPDATE * 2) 
-                else:
+                elif TICKS_PER_UPDATE > 0:
                     t = frame / TICKS_PER_UPDATE
+                else:
+                    t = 0
                 
                 current_pos = pos_a.lerp(pos_b, min(t, 1.0))
 
@@ -100,6 +102,26 @@ class DisplayScreen:
             textRect1.center = (px, py-10)
             self.screen.blit(text, textRect1)
 
+    def render_top_right_corner(self, speed_fps: int) -> None:
+        speed_percent = int(speed_fps * 100 / 60)
+        mode = "ANT" if self.is_ant else "NORMAL"
+
+        lines = [
+            f"Speed: {speed_percent}%",
+            f"Mode: {mode}",
+            f"Time: {self.current_tick}"
+        ]
+
+        screen_w = self.screen.get_width()
+        margin = 20
+        y_offset = 20
+
+        for i, line in enumerate(lines):
+            color = (0, 0, 0) if not self.is_ant else (255, 255, 255)
+            text_surf = self.font.render(line, True, color)
+            text_rect = text_surf.get_rect(topright=(screen_w - margin, y_offset + (i * 20)))            
+            self.screen.blit(text_surf, text_rect)
+
     def run(self) -> None:
         frame = 0
         TICKS_PER_UPDATE = 30 
@@ -115,20 +137,41 @@ class DisplayScreen:
 
                     elif event.key == pygame.K_f:
                         self.is_ant = not self.is_ant
-            any_moving = any(len(d.path) > self.current_tick + 1 for d in self.input_data.lst_drones)
-            
+
+                    elif event.key == pygame.K_DOWN and TICKS_PER_UPDATE >= 5:
+                        TICKS_PER_UPDATE -= 5
+
+                    elif event.key == pygame.K_UP and TICKS_PER_UPDATE <= 55:
+                        TICKS_PER_UPDATE += 5
+
+                    elif event.key == pygame.K_LEFT:
+                        if self.current_tick > 0:
+                            self.current_tick -= 1
+                            frame = 0 # On reset le frame pour éviter un saut immédiat
+
+                    elif event.key == pygame.K_RIGHT:
+                        max_path = max(len(d.path) for d in self.input_data.lst_drones)
+                        if self.current_tick < max_path - 1:
+                            self.current_tick += 1
+                            frame = 0
+
+            max_path = max(len(d.path) for d in self.input_data.lst_drones)
+            any_moving = self.current_tick < max_path - 1
+
             if any_moving:
                 frame += 1
                 if frame >= TICKS_PER_UPDATE:
                     self.current_tick += 1
                     frame = 0
+            else:
+                frame = 0
 
             self.screen.blit(self.sand, (0,0)) if self.is_ant else self.screen.fill("white")
             self.render_lines()
             self.render_circles()
             
             self.draw_drones_and_counts(frame, TICKS_PER_UPDATE) 
-
+            self.render_top_right_corner(TICKS_PER_UPDATE)
             pygame.display.flip()
             self.clock.tick(60)
 
