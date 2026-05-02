@@ -35,7 +35,7 @@ class DisplayScreen:
                                 TICKS_PER_UPDATE: int,
                                 drone: Drone,
                                 cnt_per_hub: Dict[str, int]
-                                ):
+                                ) -> None:
         curr_idx = min(self.current_tick, len(drone.path) - 1)
         next_idx = min(self.current_tick + 1, len(drone.path) - 1)
 
@@ -70,7 +70,7 @@ class DisplayScreen:
     def display_freezed_drones(self,
                                drone: Drone,
                                cnt_per_hub: Dict[str, int]
-                               ):
+                               ) -> bool:
         if len(drone.path) > self.current_tick:
             hub = drone.path[self.current_tick]
         else:
@@ -96,7 +96,7 @@ class DisplayScreen:
     def txt_multiple_drones(self,
                             cnt_per_hub: Dict[str, int],
                             hub_map: Dict[str, Hub]
-                            ):
+                            ) -> None:
         for name, count in cnt_per_hub.items():
             hub = hub_map[name]
             p = pygame.Vector2(self.get_hub_pos(hub.x, hub.y))
@@ -125,7 +125,7 @@ class DisplayScreen:
 
         self.txt_multiple_drones(cnt_per_hub, hub_map)
 
-    def blocked_zone(self, hx: int, hy: int, color: str):
+    def blocked_zone(self, hx: int, hy: int, color: str) -> None:
         start = pygame.Vector2(self.get_hub_pos(hx, hy))
         end = pygame.Vector2(self.get_hub_pos(hx, hy))
         sx, sy = start
