@@ -22,7 +22,7 @@ class Hub(BaseModel):
     zone: ZoneType = Field(default=ZoneType.NORMAL)
     color: str = Field(default="gray")
     max_drones: int = Field(default=1)
-    score: int = Field(default=math.inf)
+    score: float = Field(default=math.inf)
     # scores: Dict[tuple[str, int], int] = {}
     nb_drones_in: List[Any] = Field(default=[])
 
@@ -164,7 +164,10 @@ def create_connection(line: str,
         existing_names = {conn.hub1.name, conn.hub2.name}
         if {name1, name2} == existing_names:
             raise ValueError(f"Input Error: {data}, connection already exists")
-    return Connection(hub1=hub1, hub2=hub2, max_link_capacity=max_link, connection_id=next_id)
+    return Connection(hub1=hub1,
+                      hub2=hub2,
+                      max_link_capacity=max_link,
+                      connection_id=next_id)
 
 
 def drone_line(line: str,
