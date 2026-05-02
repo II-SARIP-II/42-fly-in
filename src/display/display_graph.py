@@ -1,28 +1,35 @@
 import pygame
-from .parsing import Input_Data, ZoneType
+import pygame.camera
+from pygame.locals import *
+from ..parsing import Input_Data, ZoneType
 from typing import Any, Dict
+from .camera import Camera
 
 
 class DisplayScreen:
     def __init__(self, input_data: Input_Data):
         pygame.init()
         pygame.font.init()
+        pygame.camera.init()
         self.font = pygame.font.SysFont('freesansbold', 10)
         self.screen_size = pygame.display.Info()
-        self.screen = pygame.display.set_mode((
-            self.screen_size.current_w - 150,
-            self.screen_size.current_h - 100))
+        self.heigh = self.screen_size.current_w - 150
+        self.width = self.screen_size.current_h - 100
+        self.screen = pygame.display.set_mode((self.heigh, self.width))
         self.title = pygame.display.set_caption('Fly-In by Pgougne')
         self.clock = pygame.time.Clock()
+        self.camera = Camera(input_data.hubs, 1280, 720)
         self.running = True
         self.input_data = input_data
         self.max_x = self.get_max_x()
         self.max_y = self.get_max_y()
         self.current_tick = 0
-        self.hub_s = 40
+        self.hub_s = 20
         self.start = pygame.Vector2(0, 0)
         self.end = pygame.Vector2(0, 0)
         self.is_ant = False
+        self.dragging = False
+        self.stop = False
 
     def draw_drones_and_counts(self,
                                frame: int,
@@ -30,38 +37,44 @@ class DisplayScreen:
                                ) -> None:
         cnt_per_hub: Dict[str, int] = {}
         hub_map = {hub.name: hub for hub in self.input_data.hubs}
-
+        print(TICKS_PER_UPDATE)
         for drone in self.input_data.lst_drones:
             if not drone.path:
                 continue
+            if TICKS_PER_UPDATE < 60 or not self.stop:
+                curr_idx = min(self.current_tick, len(drone.path) - 1)
+                next_idx = min(self.current_tick + 1, len(drone.path) - 1)
 
-            curr_idx = min(self.current_tick, len(drone.path) - 1)
-            next_idx = min(self.current_tick + 1, len(drone.path) - 1)
+                hub_a = drone.path[curr_idx]
+                hub_b = drone.path[next_idx]
 
-            hub_a = drone.path[curr_idx]
-            hub_b = drone.path[next_idx]
+                pos_a = pygame.Vector2(self.get_hub_pos(hub_a.x, hub_a.y))
+                pos_b = pygame.Vector2(self.get_hub_pos(hub_b.x, hub_b.y))
 
-            pos_a = pygame.Vector2(self.get_hub_pos(hub_a.x, hub_a.y))
-            pos_b = pygame.Vector2(self.get_hub_pos(hub_b.x, hub_b.y))
-
-            is_restricted_move = (hub_b.zone == ZoneType.RESTRICTED
-                                  and hub_a != hub_b)
-            if hub_a == hub_b:
-                current_pos = pos_a
-                cnt_per_hub[hub_b.name] = cnt_per_hub.get(hub_b.name, 0) + 1
-            else:
-                if is_restricted_move and TICKS_PER_UPDATE > 0:
-                    t = frame / (TICKS_PER_UPDATE * 2)
-                elif TICKS_PER_UPDATE > 0:
-                    t = frame / TICKS_PER_UPDATE
+                is_restricted_move = (hub_b.zone == ZoneType.RESTRICTED
+                                      and hub_a != hub_b)
+                if hub_a == hub_b:
+                    current_pos = pos_a
+                    cnt_per_hub[hub_b.name] = cnt_per_hub.get(hub_b.name, 0) + 1
                 else:
-                    t = 0
+                    if is_restricted_move and TICKS_PER_UPDATE > 0:
+                        t = frame / (TICKS_PER_UPDATE * 2)
+                    elif TICKS_PER_UPDATE > 0:
+                        t = frame / TICKS_PER_UPDATE
+                    else:
+                        t = 0
 
-                current_pos = pos_a.lerp(pos_b, min(t, 1.0))
+                    current_pos = pos_a.lerp(pos_b, min(t, 1.0))
 
-            img = self.ant if self.is_ant else self.drone_img
-            rect = img.get_rect(center=current_pos)
-            self.screen.blit(img, rect)
+                img = self.ant if self.is_ant else self.drone_img
+                rect = img.get_rect(center=current_pos)
+                self.screen.blit(img, rect)
+            else:
+                hub = drone.path[self.current_tick]
+                print(hub.x, hub.y)
+                img = self.ant if self.is_ant else self.drone_img
+                rect = img.get_rect(center=self.get_hub_pos(hub.x, hub.y))
+                self.screen.blit(img, rect)
 
         for name, count in cnt_per_hub.items():
             hub = hub_map[name]
@@ -135,41 +148,61 @@ class DisplayScreen:
                 )
             self.screen.blit(text_surf, text_rect)
 
+    def event_control(self, frame: int, TICKS_PER_UPDATE: int):
+        for event in pygame.event.get():
+            match event.type:
+                case pygame.QUIT:
+                    self.running = False
+                case pygame.MOUSEWHEEL:
+                    self.camera.zoom(event.y)
+                case pygame.MOUSEBUTTONDOWN:
+                    if event.button == 1:
+                        self.dragging = True
+                case pygame.MOUSEBUTTONUP:
+                    if event.button == 1:
+                        self.dragging = False
+                case pygame.MOUSEMOTION:
+                    if self.dragging:
+                        dx, dy = event.rel 
+                        self.camera.update_screen_coords(dx, dy)
+                case pygame.KEYDOWN:
+                    match event.key:
+                        case pygame.K_ESCAPE:
+                            self.running = False
+                        case pygame.K_f:
+                            self.is_ant = not self.is_ant
+                        case pygame.K_DOWN:
+                            if TICKS_PER_UPDATE <= 56:
+                                TICKS_PER_UPDATE += 3
+                        case pygame.K_SPACE:
+                            self.stop = not self.stop
+                        case pygame.K_UP:
+                            if TICKS_PER_UPDATE >= 5:
+                                TICKS_PER_UPDATE -= 3
+                        case pygame.K_LEFT:
+                            if self.current_tick > 0:
+                                self.current_tick -= 1
+                                frame = 0
+                        case pygame.K_RIGHT:
+                            max_path = (max(len(d.path)
+                                            for d in self.input_data.lst_drones))
+                            if self.current_tick < max_path - 1:
+                                self.current_tick += 1
+                                frame = 0
+        return frame, TICKS_PER_UPDATE
+
     def run(self) -> None:
         frame = 0
         TICKS_PER_UPDATE = 30
 
         while self.running:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    self.running = False
-
-                elif event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_ESCAPE or event.key == pygame.K_q:
-                        self.running = False
-                    elif event.key == pygame.K_f:
-                        self.is_ant = not self.is_ant
-                    elif event.key == pygame.K_DOWN and TICKS_PER_UPDATE <= 55:
-                        TICKS_PER_UPDATE += 5
-                    elif event.key == pygame.K_UP and TICKS_PER_UPDATE >= 5:
-                        TICKS_PER_UPDATE -= 5
-                    elif event.key == pygame.K_LEFT:
-                        if self.current_tick > 0:
-                            self.current_tick -= 1
-                            frame = 0
-                    elif event.key == pygame.K_RIGHT:
-                        max_path = (max(len(d.path)
-                                        for d in self.input_data.lst_drones))
-                        if self.current_tick < max_path - 1:
-                            self.current_tick += 1
-                            frame = 0
-
+            frame, TICKS_PER_UPDATE = self.event_control(frame, TICKS_PER_UPDATE)
             max_path = max(len(d.path) for d in self.input_data.lst_drones)
             any_moving = self.current_tick < max_path - 1
-
+            print(self.stop)
             if any_moving:
                 frame += 1
-                if frame >= TICKS_PER_UPDATE:
+                if frame >= TICKS_PER_UPDATE and not self.stop:
                     self.current_tick += 1
                     frame = 0
             else:
@@ -200,17 +233,7 @@ class DisplayScreen:
         return max_int - min_int
 
     def get_hub_pos(self, x: int, y: int) -> tuple[int, int]:
-        padding = 50
-        drawable_w = self.screen_size.current_w - 150 - (padding * 2)
-        drawable_h = self.screen_size.current_h - 100 - (padding * 2)
-
-        scale_x = drawable_w / (self.max_x + 1) if self.max_x > 0 else 0
-        scale_y = drawable_h / 2 / (self.max_y + 1) if self.max_y > 0 else 0
-
-        posX = (x * scale_x) + padding
-        posY = (y * scale_y) + padding + drawable_h / 2
-
-        return int(posX), int(posY)
+        return self.camera.get_screen_coords(x, y)
 
     def get_img_drone(self) -> None:
         original_img = pygame.image.load("assets/drone.png").convert_alpha()
