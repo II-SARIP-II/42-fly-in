@@ -32,9 +32,26 @@ Personnal choice:
 To solve the graph i decided that the priority rule is choosen if the path is free and the lenght of the path is smaller or the same than other possible path that are not flagged as priority.
 
 # Instructions
-run the program
->Make run
+To run the program:
+> Make run
 
+what is does:
+>@python -m src path/to/graph.txt
+
+\
+To clear all useless files like pycache or mypy
+>make clean
+
+\
+To check norm and typing:
+>make lint
+
+Or the strict version:
+>make lint-strict
+
+\
+To debug:
+>make debug
 
 # Resources
 
