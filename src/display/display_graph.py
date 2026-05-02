@@ -30,7 +30,12 @@ class DisplayScreen:
         self.debug_print = False
         self.print_names = True
 
-    def display_drones_movement(self, frame: int, TICKS_PER_UPDATE: int, drone: Drone, cnt_per_hub: Dict[str, int]):
+    def display_drones_movement(self,
+                                frame: int,
+                                TICKS_PER_UPDATE: int,
+                                drone: Drone,
+                                cnt_per_hub: Dict[str, int]
+                                ):
         curr_idx = min(self.current_tick, len(drone.path) - 1)
         next_idx = min(self.current_tick + 1, len(drone.path) - 1)
 
@@ -42,13 +47,18 @@ class DisplayScreen:
 
         if hub_b.zone == ZoneType.RESTRICTED:
             if hub_a != hub_b:
-                pos_b = pygame.Vector2(self.get_hub_pos((hub_b.x + hub_a.x)/2, (hub_b.y + hub_a.y)/2))
+                pos_b = pygame.Vector2(self.get_hub_pos(
+                    (hub_b.x + hub_a.x)/2, (hub_b.y + hub_a.y)/2))
 
             else:
                 if self.current_tick >= 1:
-                    pos_before_a = drone.path[min(self.current_tick - 1, len(drone.path) - 1)]
-                    cnt_per_hub[hub_b.name] = (cnt_per_hub.get(hub_b.name, 0) + 1)
-                    pos_a = pygame.Vector2(self.get_hub_pos((hub_a.x + pos_before_a.x)/2, (hub_a.y + pos_before_a.y)/2))
+                    pos_bef_a = drone.path[min(
+                        self.current_tick - 1,
+                        len(drone.path) - 1)]
+                    cnt_per_hub[hub_b.name] = (cnt_per_hub.get(hub_b.name, 0)
+                                               + 1)
+                    pos_a = pygame.Vector2(self.get_hub_pos(
+                        (hub_a.x + pos_bef_a.x)/2, (hub_a.y + pos_bef_a.y)/2))
         else:
             cnt_per_hub[hub_b.name] = (cnt_per_hub.get(hub_b.name, 0) + 1)
         t = frame / TICKS_PER_UPDATE
@@ -57,19 +67,24 @@ class DisplayScreen:
         rect = img.get_rect(center=current_pos)
         self.screen.blit(img, rect)
 
-    def display_freezed_drones(self, drone: Drone, cnt_per_hub: Dict[str, int]):
+    def display_freezed_drones(self,
+                               drone: Drone,
+                               cnt_per_hub: Dict[str, int]
+                               ):
         if len(drone.path) > self.current_tick:
             hub = drone.path[self.current_tick]
         else:
             hub = drone.path[-1]
-        if hub.zone == ZoneType.RESTRICTED and hub != drone.path[self.current_tick + 1]:
+        if (hub.zone == ZoneType.RESTRICTED
+                and hub != drone.path[self.current_tick + 1]):
             curr_idx = min(self.current_tick, len(drone.path) - 1)
             next_idx = min(self.current_tick + 1, len(drone.path) - 1)
 
             hub_a = drone.path[curr_idx]
             hub_b = drone.path[next_idx]
             img = self.ant if self.is_ant else self.drone_img
-            rect = img.get_rect(center=self.get_hub_pos((hub_b.x + hub_a.x)/2, (hub_b.y + hub_a.y)/2))
+            rect = img.get_rect(center=self.get_hub_pos(
+                (hub_b.x + hub_a.x)/2, (hub_b.y + hub_a.y)/2))
             self.screen.blit(img, rect)
             return True
         cnt_per_hub[hub.name] = (cnt_per_hub.get(hub.name, 0) + 1)
@@ -78,7 +93,10 @@ class DisplayScreen:
         self.screen.blit(img, rect)
         return False
 
-    def txt_multiple_drones(self, cnt_per_hub: Dict[str, int], hub_map: Dict[str, Hub]):
+    def txt_multiple_drones(self,
+                            cnt_per_hub: Dict[str, int],
+                            hub_map: Dict[str, Hub]
+                            ):
         for name, count in cnt_per_hub.items():
             hub = hub_map[name]
             p = pygame.Vector2(self.get_hub_pos(hub.x, hub.y))
@@ -98,7 +116,9 @@ class DisplayScreen:
                 continue
 
             if not self.stop:
-                self.display_drones_movement(frame, TICKS_PER_UPDATE, drone, cnt_per_hub)
+                self.display_drones_movement(frame,
+                                             TICKS_PER_UPDATE,
+                                             drone, cnt_per_hub)
             else:
                 if self.display_freezed_drones(drone, cnt_per_hub):
                     continue

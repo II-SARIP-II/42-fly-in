@@ -209,7 +209,8 @@ def read_file(filename: str) -> Input_Data:
                                  "The file must start with nb_drones: X")
             try:
                 hub = create_hub(line, lst_drones)
-                if (hub.is_start or hub.is_end)and hub.zone == ZoneType.BLOCKED:
+                if ((hub.is_start or hub.is_end)
+                        and hub.zone == ZoneType.BLOCKED):
                     raise ValueError("Start and End cannot be blocked")
                 hubs.append(hub)
             except Exception as e:

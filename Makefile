@@ -3,10 +3,10 @@ MYPY 	:= mypy
 FLAGS	:= --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
 
 install:
-	uv add pydantic numpy
+	uv add pydantic pygame-ce
 
 uninstall:
-	pip uninstall pydantic numpy
+	pip uninstall pydantic pygame-ce
 
 run:
 	@python -m src maps/easy/01_linear_path.txt
@@ -32,8 +32,5 @@ init:
 
 venv:
 	uv venv
-
-del-venv:
-	rm -rf callmemaybe
 
 .PHONY: install, uninstall, run, debug, clean, lint, lint-strict, init, venv
