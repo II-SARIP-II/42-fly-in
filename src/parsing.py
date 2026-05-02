@@ -208,7 +208,10 @@ def read_file(filename: str) -> Input_Data:
                 raise ValueError(f"Error in line {idx+1}: Input Error: "
                                  "The file must start with nb_drones: X")
             try:
-                hubs.append(create_hub(line, lst_drones))
+                hub = create_hub(line, lst_drones)
+                if (hub.is_start or hub.is_end)and hub.zone == ZoneType.BLOCKED:
+                    raise ValueError("Start and End cannot be blocked")
+                hubs.append(hub)
             except Exception as e:
                 raise ValueError(f"Error in line {idx+1}: {e}")
 

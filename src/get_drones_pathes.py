@@ -55,7 +55,7 @@ class Paths:
                                ) -> List[Hub]:
         neighbors_data = []
         for conn in self.input_data.connections:
-            if curr_hub.name == conn.hub1.name:
+            if curr_hub.name == conn.hub1.name and conn.hub2.zone != ZoneType.BLOCKED:
                 if not self.is_free_connection(conn, curr_time):
                     continue
                 delta_t = 2 if conn.hub2.zone == ZoneType.RESTRICTED else 1
@@ -95,6 +95,8 @@ class Paths:
             else:
                 curr_time += 1
                 path.append(curr_place)
+        if path[-1] != self.goal:
+            raise ValueError("Error: No solutions found")
         return path
 
     def init_dijkstra(self) -> None:
