@@ -99,7 +99,7 @@ class Paths:
             raise ValueError("Error: No solutions found")
         return path
 
-    def init_dijkstra(self) -> None:
+    def init_algo(self) -> None:
         for conn in self.input_data.connections:
             if conn.hub1.is_start:
                 self.src = conn.hub1
@@ -109,7 +109,7 @@ class Paths:
             raise ValueError("Input Error: it must be a start "
                              "and an end to the graph")
 
-    def get_hub_scores(self) -> Input_Data:
+    def get_hub_scores(self) -> None:
         scores = {hub.name: math.inf for hub in self.input_data.hubs}
         scores[self.goal.name] = 0
         queue = [self.goal]
@@ -133,14 +133,13 @@ class Paths:
                         queue.append(conn.hub1)
 
         self.scores = scores
-        return self.input_data
 
 
-def dijkstra(input_data: Input_Data) -> Input_Data:
+def algo_path(input_data: Input_Data) -> Input_Data:
     try:
         path = Paths(input_data)
-        path.init_dijkstra()
-        input_data = path.get_hub_scores()
+        path.init_algo()
+        path.get_hub_scores()
     except Exception as e:
         raise ValueError(e)
 
