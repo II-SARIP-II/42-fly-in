@@ -1,5 +1,5 @@
 from .parsing import Input_Data, Hub, Connection, ZoneType
-from typing import List
+from typing import List, Dict, Any
 import math
 
 
@@ -9,7 +9,7 @@ class Paths:
         self.res_conn: dict = {
             connection.connection_id: {}
             for connection in input_data.connections}
-        self.scores = {}
+        self.scores: Dict[str, float] = {}
         self.input_data: Input_Data = input_data
         self.src: Hub
         self.goal: Hub
@@ -22,12 +22,12 @@ class Paths:
             if hub.is_end:
                 self.goal = hub
 
-    def is_free_hub(self, hub: Hub, time: int) -> bool:
+    def is_free_hub(self, hub: Hub, time: int) -> Any:
         if self.reservation_hub[hub.name].get(time):
             return self.reservation_hub[hub.name].get(time) < hub.max_drones
         return True
 
-    def is_free_connection(self, connection: Connection, time: int) -> bool:
+    def is_free_connection(self, connection: Connection, time: int) -> Any:
         if self.res_conn[connection.connection_id].get(time):
             return (self.res_conn[connection.connection_id].get(time)
                     < connection.max_link_capacity)
@@ -49,7 +49,10 @@ class Paths:
         else:
             self.res_conn[connection.connection_id][time] += 1
 
-    def get_available_neighbor(self, curr_hub: Hub, curr_time: int):
+    def get_available_neighbor(self,
+                               curr_hub: Hub,
+                               curr_time: int
+                               ) -> List[Hub]:
         neighbors_data = []
         for conn in self.input_data.connections:
             if curr_hub.name == conn.hub1.name:
@@ -62,7 +65,7 @@ class Paths:
                 neighbors_data.append((conn.hub2, conn, delta_t))
         return neighbors_data
 
-    def get_path(self):
+    def get_path(self) -> List[Hub]:
         curr_place = self.src
         path: List = [self.src]
         curr_time = 0
@@ -94,7 +97,7 @@ class Paths:
                 path.append(curr_place)
         return path
 
-    def init_dijkstra(self):
+    def init_dijkstra(self) -> None:
         for conn in self.input_data.connections:
             if conn.hub1.is_start:
                 self.src = conn.hub1
@@ -104,17 +107,16 @@ class Paths:
             raise ValueError("Input Error: it must be a start "
                              "and an end to the graph")
 
-    def get_hub_scores(self):
+    def get_hub_scores(self) -> Input_Data:
         scores = {hub.name: math.inf for hub in self.input_data.hubs}
         scores[self.goal.name] = 0
         queue = [self.goal]
-
         while queue:
             curr_hub = queue.pop(0)
 
             for conn in self.input_data.connections:
                 if conn.hub2 == curr_hub:
-                    add_val = 1
+                    add_val: float = 1
                     if conn.hub1.zone == ZoneType.RESTRICTED:
                         add_val = 2
                     elif curr_hub.zone == ZoneType.PRIORITY:
@@ -132,7 +134,7 @@ class Paths:
         return self.input_data
 
 
-def dijkstra(input_data: Input_Data):
+def dijkstra(input_data: Input_Data) -> Input_Data:
     try:
         path = Paths(input_data)
         path.init_dijkstra()
