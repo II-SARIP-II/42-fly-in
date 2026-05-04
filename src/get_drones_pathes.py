@@ -76,7 +76,7 @@ class Paths:
             potential_moves = self.get_available_neighbor(curr_place,
                                                           curr_time)
 
-            if len(potential_moves) > 0:
+            if len(potential_moves) > 0: # ici si hub j'ai des chemins de merdes, il va dedans quand meme
                 best_move = potential_moves[0]
 
                 for move in potential_moves:

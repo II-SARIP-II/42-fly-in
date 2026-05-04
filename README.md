@@ -54,7 +54,48 @@ To debug:
 >make debug
 
 # Resources
+https://www.autodraw.com/\
+https://www.numberanalytics.com/blog/complete-dijkstra-algorithm-tutorial#when-to-use-a\
+https://www.w3schools.com/
+https://www.geeksforgeeks.org/\
+https://stackoverflow.com/\
+https://pyga.me/docs
 
-# Algorythm Description
+AI use:
+- Understand how to build the dictionnary that stores the reservation table.
+- Explain me some complex concept
+- Occasionally debug
+
+# Algorithm Description
+
+In first, I calculate a score for each hub that i stored in a dictionnary linking hub and the score.
+The score is how many turn it cost to a drone to reach the goal hub from a hub.
+e.g:
+
+> src -> hub1 -> hub2 -> goal\
+> score = {src: 3, hub1: 2, hub2: 1, goal: 0}
+
+if a hub is restricted, the cost is 2
+if a hub is priority, the cost is 0.4, so if two paths are the same lenght, it picks the one with priority. 
+With this, it is easy to find the shortest path, you just have to find the smallest score from all neighbor of a current hub.
+
+Now that we have the score of all hub, we want to find the path shortest for all drones, so the first drone will always follow the shortest path but it's not the same for all other drones.
+
+For each drone it looks in a reservation table that save for each hub, how many drones are in for each turn and register to the reservation table for each hub it crosses..
+
+Like this: 
+
+>{'start': {}, 'loop_a': {1: 3, 2: 3, 6: 3}, 'loop_b': {2: 3, 3: 3, 7: 3}, 'loop_c': {4: 3}, 'loop_d': {5: 3}, 'exit_point': {4: 3, 3: 3, 9: 3, 8: 3}, 'goal': {5: 1, 6: 1, 7: 1, 10: 1, 11: 1, 12: 1}}
 
 # Visualisation features
+
+| input | feature |
+|-------|---------|
+| ↓ | slow down the simulation |
+| ↑ | speed up the simulation |
+| ← | go to the previous time |
+| → | go to the next time |
+| space | pause the simulatin |
+| f | toggle ant mode |
+| n | toggle hub name  |
+| d | toggle hub description |
