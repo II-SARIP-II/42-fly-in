@@ -9,7 +9,7 @@ uninstall:
 	pip uninstall pydantic pygame-ce
 
 run:
-	@python -m src maps/easy/01_linear_path.txt
+	@python -m src maps/challenger/01_the_impossible_dream.txt
 
 debug:
 	uv run python -m pdb src/__main__.py
