@@ -76,9 +76,9 @@ class DisplayScreen:
         else:
             hub = drone.path[-1]
         if (hub.zone == ZoneType.RESTRICTED
-                and hub != drone.path[self.current_tick + 1]):
-            curr_idx = min(self.current_tick, len(drone.path) - 1)
-            next_idx = min(self.current_tick + 1, len(drone.path) - 1)
+                and hub != drone.path[self.current_tick - 1]):
+            curr_idx = min(self.current_tick - 1, len(drone.path) - 1)
+            next_idx = min(self.current_tick, len(drone.path) - 1)
 
             hub_a = drone.path[curr_idx]
             hub_b = drone.path[next_idx]

@@ -22,9 +22,11 @@ class Paths:
             if hub.is_end:
                 self.goal = hub
 
-    def is_free_hub(self, hub: Hub, time: int) -> Any:
-        if self.reservation_hub[hub.name].get(time):
-            return self.reservation_hub[hub.name].get(time) < hub.max_drones
+    def is_free_hub(self, hub: Hub, time: int, delta_t: int) -> Any:
+        for t in range(time, time + delta_t):
+            current_occupancy = self.reservation_hub[hub.name].get(t, 0)
+            if current_occupancy >= hub.max_drones:
+                return False
         return True
 
     def is_free_connection(self, connection: Connection, time: int) -> Any:
@@ -60,7 +62,7 @@ class Paths:
                 if not self.is_free_connection(conn, curr_time):
                     continue
                 delta_t = 2 if conn.hub2.zone == ZoneType.RESTRICTED else 1
-                if not self.is_free_hub(conn.hub2, curr_time + delta_t):
+                if not self.is_free_hub(conn.hub2, curr_time + 1, delta_t):
                     continue
 
                 neighbors_data.append((conn.hub2, conn, delta_t))
@@ -137,15 +139,16 @@ class Paths:
 
 
 def algo_path(input_data: Input_Data) -> Input_Data:
-    try:
-        path = Paths(input_data)
-        path.init_algo()
-        path.get_hub_scores()
-    except Exception as e:
-        raise ValueError(e)
+    #try:
+    path = Paths(input_data)
+    path.init_algo()
+    path.get_hub_scores()
+    #except Exception as e:
+    #    raise ValueError(e)
 
     for drone in input_data.lst_drones:
         drone_path = path.get_path()
+        print(path.reservation_hub)
         if path:
             drone.path = drone_path
         else:
