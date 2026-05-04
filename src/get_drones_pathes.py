@@ -23,10 +23,8 @@ class Paths:
                 self.goal = hub
 
     def is_free_hub(self, hub: Hub, time: int, delta_t: int) -> Any:
-        for t in range(time, time + delta_t):
-            current_occupancy = self.reservation_hub[hub.name].get(t, 0)
-            if current_occupancy >= hub.max_drones:
-                return False
+        if self.reservation_hub[hub.name].get(time + delta_t):
+            return self.reservation_hub[hub.name].get(time) < hub.max_drones
         return True
 
     def is_free_connection(self, connection: Connection, time: int) -> Any:
@@ -76,18 +74,22 @@ class Paths:
             potential_moves = self.get_available_neighbor(curr_place,
                                                           curr_time)
 
-            if len(potential_moves) > 0: # ici si hub j'ai des chemins de merdes, il va dedans quand meme
+            if len(potential_moves) > 0:
                 best_move = potential_moves[0]
-
                 for move in potential_moves:
                     neighbor_hub, _, _ = move
                     if (self.scores[neighbor_hub.name]
                             < self.scores[best_move[0].name]):
                         best_move = move
 
-                next_hub, used_conn, delta_t = best_move
+                if self.is_free_hub(curr_place, curr_time + 1, 1):
+                    if self.scores[curr_place.name] < self.scores[best_move[0].name]:
+                        best_move == (curr_place, None, 1)
 
-                self.reserve_connection(used_conn, curr_time)
+                next_hub, used_conn, delta_t = best_move
+                if used_conn:
+                    self.reserve_connection(used_conn, curr_time)
+
                 self.reserve_hub(next_hub, curr_time, delta_t)
 
                 curr_place = next_hub
@@ -148,9 +150,9 @@ def algo_path(input_data: Input_Data) -> Input_Data:
 
     for drone in input_data.lst_drones:
         drone_path = path.get_path()
-        print(path.reservation_hub)
         if path:
             drone.path = drone_path
         else:
             raise ValueError("An error occured in the algorythm")
+    print(path.reservation_hub)
     return input_data
