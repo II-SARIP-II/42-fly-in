@@ -16,8 +16,8 @@ class Camera:
         min_x, max_x = min(logical_xs), max(logical_xs)
         min_y, max_y = min(logical_ys), max(logical_ys)
 
-        logical_width = max_x - min_x
-        logical_height = max_y - min_y
+        logical_width = max(1, max_x - min_x)
+        logical_height = max(1, max_y - min_y)
 
         scale_x = (self.screen_width - 2 * margin) / logical_width
         scale_y = (self.screen_height - 2 * margin) / logical_height
