@@ -22,15 +22,14 @@ class PathsFinding:
             if hub.is_end:
                 self.goal = hub
 
-    def is_free_hub(self, hub: Hub, time: int) -> Any:
-        if self.reservation_hub[hub.name].get(time):
-            return self.reservation_hub[hub.name].get(time) < hub.max_drones
+    def is_free_hub(self, hub: Hub, time: int) -> bool:
+        if (count := self.reservation_hub[hub.name].get(time)) is not None:
+            return count < hub.max_drones
         return True
 
-    def is_free_connection(self, connection: Connection, time: int) -> Any:
-        if self.res_conn[connection.connection_id].get(time):
-            return (self.res_conn[connection.connection_id].get(time)
-                    < connection.max_link_capacity)
+    def is_free_connection(self, connection: Connection, time: int) -> bool:
+        if (count := self.res_conn[connection.connection_id].get(time)) is not None:
+            return count < connection.max_link_capacity
         return True
 
     def reserve_hub(self, hub: Hub, time: int, delta_t: int) -> None:
