@@ -1,4 +1,4 @@
-import pygame
+import pygame # type: ignore
 from ..parsing import Input_Data, ZoneType, Drone, Hub
 from typing import Any, Dict
 from .camera import Camera
@@ -315,7 +315,7 @@ class DisplayScreen:
         min_int = min(lsthuby)
         return max_int - min_int
 
-    def get_hub_pos(self, x: int, y: int) -> Any:
+    def get_hub_pos(self, x: float, y: float) -> tuple[int, int]:
         return self.camera.get_screen_coords(x, y)
 
     def get_img_drone(self) -> None:

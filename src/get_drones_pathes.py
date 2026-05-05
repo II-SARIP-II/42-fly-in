@@ -3,10 +3,10 @@ from typing import List, Dict, Any
 import math
 
 
-class Paths:
+class PathsFinding:
     def __init__(self, input_data: Input_Data) -> None:
-        self.reservation_hub: dict = {hub.name: {} for hub in input_data.hubs}
-        self.res_conn: dict = {
+        self.reservation_hub: Dict[str, Dict[int, int]] = {hub.name: {} for hub in input_data.hubs}
+        self.res_conn: Dict[int, Dict[int, int]] = {
             connection.connection_id: {}
             for connection in input_data.connections}
         self.scores: Dict[str, float] = {}
@@ -50,7 +50,7 @@ class Paths:
     def get_available_neighbor(self,
                                curr_hub: Hub,
                                curr_time: int
-                               ) -> List[Hub]:
+                               ) -> list[tuple[Hub, Connection, int]]:
         neighbors_data = []
         for conn in self.input_data.connections:
             if (curr_hub.name == conn.hub1.name
@@ -66,14 +66,14 @@ class Paths:
 
     def get_path(self) -> List[Hub]:
         curr_place = self.src
-        path: List = [self.src]
+        path: List[Hub] = [self.src]
         curr_time = 0
         while curr_place.name != self.goal.name and curr_time < 100:
             potential_moves = self.get_available_neighbor(curr_place,
                                                           curr_time)
 
             if len(potential_moves) > 0:
-                best_move = potential_moves[0]
+                best_move: tuple[Hub, None|Connection, int] = potential_moves[0]
                 for move in potential_moves:
                     neighbor_hub, _, _ = move
                     if (self.scores[neighbor_hub.name]
@@ -81,10 +81,10 @@ class Paths:
                         best_move = move
 
                 if self.is_free_hub(curr_place, curr_time + 1):
-                    if self.scores[curr_place.name] < self.scores[best_move[0].name]:
-                        best_move == (curr_place, None, 1)
+                    if (self.scores[curr_place.name]
+                            < self.scores[best_move[0].name]):
+                        best_move = (curr_place, None, 1)
 
-                print(curr_place, curr_time, best_move, end="\n\n\n")
                 next_hub, used_conn, delta_t = best_move
                 if used_conn:
                     self.reserve_connection(used_conn, curr_time)
@@ -141,12 +141,12 @@ class Paths:
 
 
 def algo_path(input_data: Input_Data) -> Input_Data:
-    #try:
-    path = Paths(input_data)
-    path.init_algo()
-    path.get_hub_scores()
-    #except Exception as e:
-    #    raise ValueError(e)
+    try:
+        path = PathsFinding(input_data)
+        path.init_algo()
+        path.get_hub_scores()
+    except Exception as e:
+        raise ValueError(e)
 
     for drone in input_data.lst_drones:
         drone_path = path.get_path()
@@ -154,5 +154,5 @@ def algo_path(input_data: Input_Data) -> Input_Data:
             drone.path = drone_path
         else:
             raise ValueError("An error occured in the algorythm")
-    print(path.reservation_hub)
+    print(path.res_conn)
     return input_data

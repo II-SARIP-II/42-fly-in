@@ -1,6 +1,9 @@
+from ..parsing import Hub
+
+
 class Camera:
     def __init__(self,
-                 hubs: dict,
+                 hubs: list[Hub],
                  screen_width: int,
                  screen_height: int
                  ) -> None:
