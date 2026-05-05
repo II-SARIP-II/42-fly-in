@@ -1,4 +1,4 @@
-import pygame # type: ignore
+import pygame
 from ..parsing import Input_Data, ZoneType, Drone, Hub
 from typing import Any, Dict
 from .camera import Camera
@@ -42,13 +42,13 @@ class DisplayScreen:
         hub_a = drone.path[curr_idx]
         hub_b = drone.path[next_idx]
 
-        pos_a = pygame.Vector2(self.get_hub_pos(hub_a.x, hub_a.y))
-        pos_b = pygame.Vector2(self.get_hub_pos(hub_b.x, hub_b.y))
+        pos_a = pygame.Vector2(self.get_hub_pos(hub_a.x, -hub_a.y))
+        pos_b = pygame.Vector2(self.get_hub_pos(hub_b.x, -hub_b.y))
 
         if hub_b.zone == ZoneType.RESTRICTED:
             if hub_a != hub_b:
                 pos_b = pygame.Vector2(self.get_hub_pos(
-                    (hub_b.x + hub_a.x)/2, (hub_b.y + hub_a.y)/2))
+                    (hub_b.x + hub_a.x)/2, (-hub_b.y + -hub_a.y)/2))
 
             else:
                 if self.current_tick >= 1:
@@ -58,7 +58,7 @@ class DisplayScreen:
                     cnt_per_hub[hub_b.name] = (cnt_per_hub.get(hub_b.name, 0)
                                                + 1)
                     pos_a = pygame.Vector2(self.get_hub_pos(
-                        (hub_a.x + pos_bef_a.x)/2, (hub_a.y + pos_bef_a.y)/2))
+                        (hub_a.x + pos_bef_a.x)/2, (-hub_a.y + -pos_bef_a.y)/2))
         else:
             cnt_per_hub[hub_b.name] = (cnt_per_hub.get(hub_b.name, 0) + 1)
         t = frame / TICKS_PER_UPDATE
@@ -84,12 +84,12 @@ class DisplayScreen:
             hub_b = drone.path[next_idx]
             img = self.ant if self.is_ant else self.drone_img
             rect = img.get_rect(center=self.get_hub_pos(
-                (hub_b.x + hub_a.x)/2, (hub_b.y + hub_a.y)/2))
+                (hub_b.x + hub_a.x)/2, (-hub_b.y + -hub_a.y)/2))
             self.screen.blit(img, rect)
             return True
         cnt_per_hub[hub.name] = (cnt_per_hub.get(hub.name, 0) + 1)
         img = self.ant if self.is_ant else self.drone_img
-        rect = img.get_rect(center=self.get_hub_pos(hub.x, hub.y))
+        rect = img.get_rect(center=self.get_hub_pos(hub.x, -hub.y))
         self.screen.blit(img, rect)
         return False
 
@@ -99,7 +99,7 @@ class DisplayScreen:
                             ) -> None:
         for name, count in cnt_per_hub.items():
             hub = hub_map[name]
-            p = pygame.Vector2(self.get_hub_pos(hub.x, hub.y))
+            p = pygame.Vector2(self.get_hub_pos(hub.x, -hub.y))
             if count > 1:
                 txt = (self.font.render(str(count), True, (255, 0, 0)
                                         if self.is_ant else (0, 0, 0)))
@@ -145,7 +145,7 @@ class DisplayScreen:
 
     def render_circles(self) -> None:
         for hub in self.input_data.hubs:
-            pos = pygame.Vector2(self.get_hub_pos(hub.x, hub.y))
+            pos = pygame.Vector2(self.get_hub_pos(hub.x, -hub.y))
             if not self.is_ant:
                 if hub.color == "rainbow":
                     RAINBOW = [
@@ -363,7 +363,8 @@ class DisplayScreen:
                                               (self.hub_s*2, self.hub_s*2))
         self.banana = pygame.transform.scale(banana,
                                              (self.hub_s*2, self.hub_s*2))
-        self.drone_img = pygame.transform.scale(original_img, (self.hub_s*2, self.hub_s*2))
+        self.drone_img = pygame.transform.scale(
+            original_img, (self.hub_s*2, self.hub_s*2))
 
     @staticmethod
     def _get_valid_color(color_name: str | None) -> str:

@@ -1,11 +1,12 @@
 from .parsing import Input_Data, Hub, Connection, ZoneType
-from typing import List, Dict, Any
+from typing import List, Dict
 import math
 
 
 class PathsFinding:
     def __init__(self, input_data: Input_Data) -> None:
-        self.reservation_hub: Dict[str, Dict[int, int]] = {hub.name: {} for hub in input_data.hubs}
+        self.reservation_hub: Dict[str, Dict[int, int]] = {
+            hub.name: {} for hub in input_data.hubs}
         self.res_conn: Dict[int, Dict[int, int]] = {
             connection.connection_id: {}
             for connection in input_data.connections}
@@ -28,7 +29,8 @@ class PathsFinding:
         return True
 
     def is_free_connection(self, connection: Connection, time: int) -> bool:
-        if (count := self.res_conn[connection.connection_id].get(time)) is not None:
+        if ((count := self.res_conn[connection.connection_id].get(time))
+                is not None):
             return count < connection.max_link_capacity
         return True
 
@@ -72,7 +74,8 @@ class PathsFinding:
                                                           curr_time)
 
             if len(potential_moves) > 0:
-                best_move: tuple[Hub, None|Connection, int] = potential_moves[0]
+                best_move: tuple[Hub, None | Connection, int] = (
+                    potential_moves[0])
                 for move in potential_moves:
                     neighbor_hub, _, _ = move
                     if (self.scores[neighbor_hub.name]
