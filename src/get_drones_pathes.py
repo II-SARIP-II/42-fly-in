@@ -22,8 +22,8 @@ class Paths:
             if hub.is_end:
                 self.goal = hub
 
-    def is_free_hub(self, hub: Hub, time: int, delta_t: int) -> Any:
-        if self.reservation_hub[hub.name].get(time + delta_t):
+    def is_free_hub(self, hub: Hub, time: int) -> Any:
+        if self.reservation_hub[hub.name].get(time):
             return self.reservation_hub[hub.name].get(time) < hub.max_drones
         return True
 
@@ -34,12 +34,10 @@ class Paths:
         return True
 
     def reserve_hub(self, hub: Hub, time: int, delta_t: int) -> None:
-        while delta_t > 0:
-            if not self.reservation_hub[hub.name].get(time + delta_t):
-                self.reservation_hub[hub.name][time + delta_t] = 1
-            else:
-                self.reservation_hub[hub.name][time + delta_t] += 1
-            delta_t -= 1
+        if not self.reservation_hub[hub.name].get(time + delta_t):
+            self.reservation_hub[hub.name][time + delta_t] = 1
+        else:
+            self.reservation_hub[hub.name][time + delta_t] += 1
 
     def reserve_connection(self,
                            connection: Connection,
@@ -59,8 +57,8 @@ class Paths:
                     and conn.hub2.zone != ZoneType.BLOCKED):
                 if not self.is_free_connection(conn, curr_time):
                     continue
-                delta_t = 2 if conn.hub2.zone == ZoneType.RESTRICTED else 1
-                if not self.is_free_hub(conn.hub2, curr_time + 1, delta_t):
+                delta_t = 1 if conn.hub2.zone == ZoneType.RESTRICTED else 0
+                if not self.is_free_hub(conn.hub2, curr_time + delta_t):
                     continue
 
                 neighbors_data.append((conn.hub2, conn, delta_t))
@@ -82,10 +80,11 @@ class Paths:
                             < self.scores[best_move[0].name]):
                         best_move = move
 
-                if self.is_free_hub(curr_place, curr_time + 1, 1):
+                if self.is_free_hub(curr_place, curr_time + 1):
                     if self.scores[curr_place.name] < self.scores[best_move[0].name]:
                         best_move == (curr_place, None, 1)
 
+                print(curr_place, curr_time, best_move, end="\n\n\n")
                 next_hub, used_conn, delta_t = best_move
                 if used_conn:
                     self.reserve_connection(used_conn, curr_time)
@@ -99,6 +98,7 @@ class Paths:
                     path.append(curr_place)
             else:
                 curr_time += 1
+                self.reserve_hub(curr_place, curr_time, 0)
                 path.append(curr_place)
         if path[-1] != self.goal:
             raise ValueError("Error: No solutions found")
