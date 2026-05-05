@@ -25,7 +25,7 @@ lint:
 
 lint-strict:
 	$(FLK) . --extend-exclude .venv
-	$(MYPY) . --strict
+	$(MYPY) . $(FLAGS) --strict
 
 init:
 	uv init
