@@ -1,14 +1,15 @@
-import pygame
 from ..parsing import Input_Data, ZoneType, Drone, Hub
-from typing import Any, Dict
 from .camera import Camera
+
+import pygame
+from typing import Any, Dict
 
 
 class DisplayScreen:
-    def __init__(self, input_data: Input_Data):
+    def __init__(self, input_data: Input_Data, total_move: Dict[int, int]):
         pygame.init()
         pygame.font.init()
-        self.font = pygame.font.SysFont('freesansbold', 10)
+        self.font = pygame.font.SysFont('freesansbold', 15)
         self.screen_size = pygame.display.Info()
         self.heigh = self.screen_size.current_w - 150
         self.width = self.screen_size.current_h - 100
@@ -29,19 +30,19 @@ class DisplayScreen:
         self.stop = False
         self.debug_print = False
         self.print_names = True
+        self.total_move = total_move
 
     def display_drones_movement(self,
                                 frame: int,
                                 TICKS_PER_UPDATE: int,
                                 drone: Drone,
-                                cnt_per_hub: Dict[str, int]
+                                cnt_per_hub: Dict[str, int],
                                 ) -> None:
         curr_idx = min(self.current_tick, len(drone.path) - 1)
         next_idx = min(self.current_tick + 1, len(drone.path) - 1)
 
         hub_a = drone.path[curr_idx]
         hub_b = drone.path[next_idx]
-
         pos_a = pygame.Vector2(self.get_hub_pos(hub_a.x, -hub_a.y))
         pos_b = pygame.Vector2(self.get_hub_pos(hub_b.x, -hub_b.y))
 
@@ -58,7 +59,8 @@ class DisplayScreen:
                     cnt_per_hub[hub_b.name] = (cnt_per_hub.get(hub_b.name, 0)
                                                + 1)
                     pos_a = pygame.Vector2(self.get_hub_pos(
-                        (hub_a.x + pos_bef_a.x)/2, (-hub_a.y + -pos_bef_a.y)/2))
+                        (hub_a.x + pos_bef_a.x)/2,
+                        (-hub_a.y + -pos_bef_a.y)/2))
         else:
             cnt_per_hub[hub_b.name] = (cnt_per_hub.get(hub_b.name, 0) + 1)
         t = frame / TICKS_PER_UPDATE
@@ -149,26 +151,26 @@ class DisplayScreen:
             if not self.is_ant:
                 if hub.color == "rainbow":
                     RAINBOW = [
-                        (255, 0, 0),    # Red
-                        (255, 40, 0),    # Red
-                        (255, 80, 0),    # Red
-                        (255, 127, 0),  # Orange
-                        (255, 160, 0),  # Orange
-                        (255, 200, 0),  # Orange
-                        (255, 255, 0),  # Yellow
-                        (200, 255, 0),  # Yellow
-                        (160, 255, 0),  # Yellow
-                        (120, 255, 0),  # Yellow
-                        (60, 255, 0),  # Yellow
-                        (0, 255, 0),    # Green
-                        (0, 200, 50),    # Green
-                        (0, 130, 100),    # Green
-                        (0, 70, 200),    # Green
-                        (0, 0, 255),    # Blue
-                        (30, 0, 200),    # Blue
-                        (75, 0, 130),   # Indigo
-                        (110, 0, 170),   # Indigo
-                        (148, 0, 211)   # Violet
+                        (255, 0, 0),
+                        (255, 40, 0),
+                        (255, 80, 0),
+                        (255, 127, 0),
+                        (255, 160, 0),
+                        (255, 200, 0),
+                        (255, 255, 0),
+                        (200, 255, 0),
+                        (160, 255, 0),
+                        (120, 255, 0),
+                        (60, 255, 0),
+                        (0, 255, 0),
+                        (0, 200, 50),
+                        (0, 130, 100),
+                        (0, 70, 200),
+                        (0, 0, 255),
+                        (30, 0, 200),
+                        (75, 0, 130),
+                        (110, 0, 170),
+                        (148, 0, 211)
                     ]
                     thickness = self.hub_s / len(RAINBOW)
                     for i, color in enumerate(RAINBOW):
@@ -184,7 +186,7 @@ class DisplayScreen:
                 if self.print_names:
                     name = self.font.render(hub.name, True, (0, 0, 0))
                     nameRect = name.get_rect()
-                    x, y = self.get_hub_pos(hub.x, hub.y)
+                    x, y = self.get_hub_pos(hub.x, -hub.y)
                     nameRect.center = (x, y + self.hub_s + 5)
                     self.screen.blit(name, nameRect)
                 if self.debug_print:
@@ -211,9 +213,9 @@ class DisplayScreen:
     def render_lines(self) -> None:
         for connection in self.input_data.connections:
             start = pygame.Vector2(self.get_hub_pos(connection.hub1.x,
-                                                    connection.hub1.y))
+                                                    -connection.hub1.y))
             end = pygame.Vector2(self.get_hub_pos(connection.hub2.x,
-                                                  connection.hub2.y))
+                                                  -connection.hub2.y))
             pygame.draw.line(self.screen, "black", start, end, width=2)
             if self.debug_print and not self.is_ant:
                 txt = "mc" + str(connection.max_link_capacity)
@@ -233,10 +235,11 @@ class DisplayScreen:
         lines = [
             f"Speed: {speed_percent}%",
             f"Mode: {mode}",
-            f"Time: {self.current_tick}",
             f"Stop: {self.stop}",
             f"Debug: {self.debug_print}",
-            f"Names: {self.print_names}"
+            f"Names: {self.print_names}",
+            f"Score: {self.current_tick}",
+            f"Metric Score: {self.total_move[self.current_tick]}"
         ]
 
         screen_w = self.screen.get_width()
@@ -389,7 +392,7 @@ class DisplayScreen:
             return "gray"
 
 
-def display(input_data: Input_Data) -> None:
-    game = DisplayScreen(input_data)
+def display(input_data: Input_Data, total_move: Dict[int, int]) -> None:
+    game = DisplayScreen(input_data, total_move)
     game.load_imgs()
     game.run()

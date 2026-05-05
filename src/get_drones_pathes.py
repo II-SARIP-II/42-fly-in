@@ -1,4 +1,5 @@
-from .parsing import Input_Data, Hub, Connection, ZoneType
+from .parsing.fly_in_class import Input_Data, Hub, Connection, ZoneType
+
 from typing import List, Dict
 import math
 
@@ -156,5 +157,4 @@ def algo_path(input_data: Input_Data) -> Input_Data:
             drone.path = drone_path
         else:
             raise ValueError("An error occured in the algorythm")
-    print(path.res_conn)
     return input_data
