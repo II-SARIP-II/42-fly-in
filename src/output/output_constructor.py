@@ -9,8 +9,10 @@ def build_output(drones: List[Drone]) -> Dict[int, int]:
     for i in range(max_drone_path):
         count[i] = count[i - 1] if i > 0 else 0
         for drone in drones:
-            if (len(drone.path) > i and not drone.path[i].is_start
-                    and not drone.path[i - 1].is_end and drone.path[i - 1] != drone.path[i]):
+            if (len(drone.path) > i
+                    and not drone.path[i].is_start
+                    and not drone.path[i - 1].is_end
+                    and drone.path[i - 1] != drone.path[i]):
                 if drone.path[i].zone == ZoneType.RESTRICTED:
                     count[i] += 1
                 count[i] += 1

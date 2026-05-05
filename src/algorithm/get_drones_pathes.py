@@ -1,4 +1,4 @@
-from .parsing.fly_in_class import Input_Data, Hub, Connection, ZoneType
+from ..parsing.fly_in_class import Input_Data, Hub, Connection, ZoneType
 
 from typing import List, Dict
 import math

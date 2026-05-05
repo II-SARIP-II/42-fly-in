@@ -1,7 +1,7 @@
 from .parsing.parsing import parsing
 from .parsing.fly_in_class import Input_Data
 from .display.display_graph import display
-from .get_drones_pathes import algo_path
+from .algorithm.get_drones_pathes import algo_path
 from .output.output_constructor import build_output
 
 
