@@ -318,12 +318,8 @@ class DisplayScreen:
     def get_hub_pos(self, x: float, y: float) -> tuple[int, int]:
         return self.camera.get_screen_coords(x, y)
 
-    def get_img_drone(self) -> None:
+    def load_imgs(self) -> None:
         original_img = pygame.image.load("assets/drone.png").convert_alpha()
-        self.drone_img = pygame.transform.scale(
-            original_img, (self.hub_s*2, self.hub_s*2))
-
-    def get_ants_img(self) -> None:
         sand = pygame.image.load("assets/sand-bg.jpg").convert_alpha()
         ant = pygame.image.load("assets/ant.png").convert_alpha()
         ant = pygame.transform.rotate(ant, -90)
@@ -338,6 +334,7 @@ class DisplayScreen:
                                               (self.hub_s*2, self.hub_s*2))
         self.banana = pygame.transform.scale(banana,
                                              (self.hub_s*2, self.hub_s*2))
+        self.drone_img = pygame.transform.scale(original_img, (self.hub_s*2, self.hub_s*2))
 
     @staticmethod
     def _get_valid_color(color_name: str | None) -> str:
@@ -361,7 +358,5 @@ class DisplayScreen:
 
 def display(input_data: Input_Data) -> None:
     game = DisplayScreen(input_data)
-
-    game.get_img_drone()
-    game.get_ants_img()
+    game.load_imgs()
     game.run()
