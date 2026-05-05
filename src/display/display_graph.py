@@ -147,9 +147,38 @@ class DisplayScreen:
         for hub in self.input_data.hubs:
             pos = pygame.Vector2(self.get_hub_pos(hub.x, hub.y))
             if not self.is_ant:
-                pygame.draw.circle(self.screen,
-                                   self._get_valid_color(hub.color),
-                                   pos, self.hub_s)
+                if hub.color == "rainbow":
+                    RAINBOW = [
+                        (255, 0, 0),    # Red
+                        (255, 40, 0),    # Red
+                        (255, 80, 0),    # Red
+                        (255, 127, 0),  # Orange
+                        (255, 160, 0),  # Orange
+                        (255, 200, 0),  # Orange
+                        (255, 255, 0),  # Yellow
+                        (200, 255, 0),  # Yellow
+                        (160, 255, 0),  # Yellow
+                        (120, 255, 0),  # Yellow
+                        (60, 255, 0),  # Yellow
+                        (0, 255, 0),    # Green
+                        (0, 200, 50),    # Green
+                        (0, 130, 100),    # Green
+                        (0, 70, 200),    # Green
+                        (0, 0, 255),    # Blue
+                        (30, 0, 200),    # Blue
+                        (75, 0, 130),   # Indigo
+                        (110, 0, 170),   # Indigo
+                        (148, 0, 211)   # Violet
+                    ]
+                    thickness = self.hub_s / len(RAINBOW)
+                    for i, color in enumerate(RAINBOW):
+                        radius = self.hub_s - thickness * i
+                        if radius > 0:
+                            pygame.draw.circle(self.screen, color, pos, radius)
+                else:
+                    pygame.draw.circle(self.screen,
+                                       self._get_valid_color(hub.color),
+                                       pos, self.hub_s)
                 if hub.zone == ZoneType.BLOCKED:
                     self.blocked_zone(hub.x, hub.y, hub.color)
                 if self.print_names:
@@ -348,6 +377,9 @@ class DisplayScreen:
         """
         if not color_name:
             return "gray"
+
+        if color_name == "rainbow":
+            return color_name
 
         try:
             pygame.Color(color_name)
