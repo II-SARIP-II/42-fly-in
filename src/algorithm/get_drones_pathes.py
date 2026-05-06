@@ -32,7 +32,6 @@ class PathsFinding:
     def is_free_connection(self, connection: Connection, time: int) -> bool:
         if ((count := self.res_conn[connection.connection_id].get(time))
                 is not None):
-            # print(count < connection.max_link_capacity)
             return count < connection.max_link_capacity
         return True
 
@@ -50,7 +49,10 @@ class PathsFinding:
         else:
             self.res_conn[connection.connection_id][time] += 1
 
-    def get_available_neighbor(self, curr_hub: Hub, curr_time: int) -> list[tuple[Hub, Connection, int]]:
+    def get_available_neighbor(self,
+                               curr_hub: Hub,
+                               curr_time: int
+                               ) -> list[tuple[Hub, Connection, int]]:
         neighbors_data = []
         for conn in self.input_data.connections:
             target_hub = None
@@ -70,16 +72,12 @@ class PathsFinding:
                     continue
 
                 neighbors_data.append((target_hub, conn, delta_t))
-        print("\n\ncurr:", curr_hub.name)
-        for n in neighbors_data:
-            print(n[0].name, end=" ")
         return neighbors_data
 
     def get_path(self) -> List[Hub]:
         curr_place = self.src
         path: List[Hub] = [self.src]
         curr_time = 0
-        print(end="\n\n")
         while curr_place.name != self.goal.name and curr_time < 100:
             potential_moves = self.get_available_neighbor(curr_place,
                                                           curr_time)
@@ -116,8 +114,6 @@ class PathsFinding:
                 path.append(curr_place)
         if path[-1] != self.goal:
             raise ValueError("Error: No solutions found")
-        for h in path:
-                print("path:", h.name)
         return path
 
     def init_algo(self) -> None:
@@ -174,5 +170,4 @@ def algo_path(input_data: Input_Data) -> Input_Data:
             drone.path = drone_path
         else:
             raise ValueError("An error occured in the algorythm")
-    print("\n\n\n", path.reservation_hub)
     return input_data

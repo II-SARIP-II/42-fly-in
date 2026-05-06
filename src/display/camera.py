@@ -35,7 +35,6 @@ class Camera:
         self.offset_x = (self.screen_width / 2) - (center_x * self.scale)
         self.offset_y = (self.screen_height / 2) + (center_y * self.scale)
 
-
     def get_screen_coords(self,
                           logical_x: float,
                           logical_y: float

@@ -230,17 +230,19 @@ class DisplayScreen:
                 textRect1.center = (px, py-10)
                 self.screen.blit(text, textRect1)
 
-    def render_inputs(self):
+    def render_inputs(self) -> None:
         padding = 30
         block_size = self.hub_s * 3
         color_arrow = (255, 255, 255)
         font = pygame.font.SysFont('freesansbold', 60)
-        base_points = [(0, 100), (0, 200), (200, 200), (200, 300), (300, 150), (200, 0), (200, 100)]
+        base_points = [(0, 100), (0, 200), (200, 200),
+                       (200, 300), (300, 150),
+                       (200, 0), (200, 100)]
 
-        def draw_arrow(x_offset, y_offset, rotation):
-            """Trace la flèche centrée dans le carré avec une rotation donnée."""
+        def draw_arrow(x_offset: int, y_offset: int, rotation: str) -> None:
+            """Draw arrow for layout"""
             points = []
-            size = block_size * 0.6 
+            size = block_size * 0.6
             margin = (block_size - size) / 2
 
             for px, py in base_points:
@@ -262,42 +264,55 @@ class DisplayScreen:
             pygame.draw.polygon(self.screen, color_arrow, points)
 
         x, y = padding, self.heigh - block_size - padding
-        pygame.draw.rect(self.screen, "gray31", pygame.Rect(x, y, block_size, block_size))
+        pygame.draw.rect(self.screen,
+                         "gray31", pygame.Rect(x, y, block_size, block_size))
         draw_arrow(x, y, "left")
 
         x, y = padding * 2 + block_size, self.heigh - block_size - padding
-        pygame.draw.rect(self.screen, "gray31", pygame.Rect(x, y, block_size, block_size))
+        pygame.draw.rect(self.screen,
+                         "gray31", pygame.Rect(x, y, block_size, block_size))
         draw_arrow(x, y, "down")
 
         x, y = padding * 3 + block_size * 2, self.heigh - block_size - padding
-        pygame.draw.rect(self.screen, "gray31", pygame.Rect(x, y, block_size, block_size))
+        pygame.draw.rect(self.screen,
+                         "gray31", pygame.Rect(x, y, block_size, block_size))
         draw_arrow(x, y, "right")
 
-        x, y = padding * 2 + block_size, self.heigh - block_size * 2 - padding * 2
-        pygame.draw.rect(self.screen, "gray31", pygame.Rect(x, y, block_size, block_size))
+        x, y = (padding * 2 + block_size,
+                self.heigh - block_size * 2 - padding * 2)
+        pygame.draw.rect(self.screen,
+                         "gray31", pygame.Rect(x, y, block_size, block_size))
         draw_arrow(x, y, "up")
 
-        rect_space = pygame.Rect(self.width/4, self.heigh - block_size - padding, self.width/2, block_size)
+        rect_space = pygame.Rect(self.width/4,
+                                 self.heigh - block_size - padding,
+                                 self.width/2, block_size)
         pygame.draw.rect(self.screen, "gray31", rect_space)
 
         txt = font.render("SPACE", True, (255, 255, 255))
         txt_rect = txt.get_rect(center=rect_space.center)
         self.screen.blit(txt, txt_rect)
 
-        rect_f = pygame.Rect(self.width - padding - block_size, self.heigh - block_size - padding, block_size, block_size)
+        rect_f = pygame.Rect(self.width - padding - block_size,
+                             self.heigh - block_size - padding,
+                             block_size, block_size)
         pygame.draw.rect(self.screen, "gray31", rect_f)
         txt1 = font.render("F", True, (255, 255, 255))
         txt1_rect = txt1.get_rect(center=rect_f.center)
         self.screen.blit(txt1, txt1_rect)
 
-        rect_d = pygame.Rect(self.width - padding*2 - block_size*2, self.heigh - block_size - padding, block_size, block_size)
+        rect_d = pygame.Rect(self.width - padding*2 - block_size*2,
+                             self.heigh - block_size - padding,
+                             block_size, block_size)
         pygame.draw.rect(self.screen, "gray31", rect_d)
 
         txt2 = font.render("D", True, (255, 255, 255))
         txt2_rect = txt2.get_rect(center=rect_d.center)
         self.screen.blit(txt2, txt2_rect)
 
-        rect_n = pygame.Rect(self.width - padding*3 - block_size*3, self.heigh - block_size - padding, block_size, block_size)
+        rect_n = pygame.Rect(self.width - padding*3 - block_size*3,
+                             self.heigh - block_size - padding,
+                             block_size, block_size)
         pygame.draw.rect(self.screen, "gray31", rect_n)
 
         txt3 = font.render("N", True, (255, 255, 255))
