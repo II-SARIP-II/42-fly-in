@@ -14,7 +14,7 @@ class Camera:
         self.add_y: int = 0
 
         logical_xs = [hub.x for hub in hubs]
-        logical_ys = [hub.y for hub in hubs]
+        logical_ys = [-hub.y for hub in hubs]
 
         min_x, max_x = min(logical_xs), max(logical_xs)
         min_y, max_y = min(logical_ys), max(logical_ys)
@@ -34,6 +34,7 @@ class Camera:
 
         self.offset_x = (self.screen_width / 2) - (center_x * self.scale)
         self.offset_y = (self.screen_height / 2) + (center_y * self.scale)
+
 
     def get_screen_coords(self,
                           logical_x: float,
