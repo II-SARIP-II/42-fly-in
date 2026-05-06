@@ -32,6 +32,7 @@ class PathsFinding:
     def is_free_connection(self, connection: Connection, time: int) -> bool:
         if ((count := self.res_conn[connection.connection_id].get(time))
                 is not None):
+            # print(count < connection.max_link_capacity)
             return count < connection.max_link_capacity
         return True
 
@@ -49,31 +50,40 @@ class PathsFinding:
         else:
             self.res_conn[connection.connection_id][time] += 1
 
-    def get_available_neighbor(self,
-                               curr_hub: Hub,
-                               curr_time: int
-                               ) -> list[tuple[Hub, Connection, int]]:
+    def get_available_neighbor(self, curr_hub: Hub, curr_time: int) -> list[tuple[Hub, Connection, int]]:
         neighbors_data = []
         for conn in self.input_data.connections:
-            if (curr_hub.name == conn.hub1.name
-                    and conn.hub2.zone != ZoneType.BLOCKED):
+            target_hub = None
+
+            if curr_hub.name == conn.hub1.name:
+                target_hub = conn.hub2
+            elif curr_hub.name == conn.hub2.name:
+                target_hub = conn.hub1
+
+            if target_hub and target_hub.zone != ZoneType.BLOCKED:
                 if not self.is_free_connection(conn, curr_time):
                     continue
-                delta_t = 1 if conn.hub2.zone == ZoneType.RESTRICTED else 0
-                if not self.is_free_hub(conn.hub2, curr_time + delta_t):
+
+                delta_t = 2 if target_hub.zone == ZoneType.RESTRICTED else 1
+
+                if not self.is_free_hub(target_hub, curr_time + delta_t):
                     continue
 
-                neighbors_data.append((conn.hub2, conn, delta_t))
+                neighbors_data.append((target_hub, conn, delta_t))
+        print("\n\ncurr:", curr_hub.name)
+        for n in neighbors_data:
+            print(n[0].name, end=" ")
         return neighbors_data
 
     def get_path(self) -> List[Hub]:
         curr_place = self.src
         path: List[Hub] = [self.src]
         curr_time = 0
+        print(end="\n\n")
         while curr_place.name != self.goal.name and curr_time < 100:
             potential_moves = self.get_available_neighbor(curr_place,
                                                           curr_time)
-
+            stay = False
             if len(potential_moves) > 0:
                 best_move: tuple[Hub, None | Connection, int] = (
                     potential_moves[0])
@@ -87,6 +97,7 @@ class PathsFinding:
                     if (self.scores[curr_place.name]
                             < self.scores[best_move[0].name]):
                         best_move = (curr_place, None, 1)
+                        stay = True
 
                 next_hub, used_conn, delta_t = best_move
                 if used_conn:
@@ -97,7 +108,7 @@ class PathsFinding:
                 curr_place = next_hub
                 curr_time += delta_t
                 path.append(curr_place)
-                if curr_place.zone == ZoneType.RESTRICTED:
+                if curr_place.zone == ZoneType.RESTRICTED and not stay:
                     path.append(curr_place)
             else:
                 curr_time += 1
@@ -105,6 +116,8 @@ class PathsFinding:
                 path.append(curr_place)
         if path[-1] != self.goal:
             raise ValueError("Error: No solutions found")
+        for h in path:
+                print("path:", h.name)
         return path
 
     def init_algo(self) -> None:
@@ -121,24 +134,29 @@ class PathsFinding:
         scores = {hub.name: math.inf for hub in self.input_data.hubs}
         scores[self.goal.name] = 0
         queue = [self.goal]
+
         while queue:
             curr_hub = queue.pop(0)
 
             for conn in self.input_data.connections:
-                if conn.hub2 == curr_hub:
+                neighbor = None
+                if conn.hub2.name == curr_hub.name:
+                    neighbor = conn.hub1
+                elif conn.hub1.name == curr_hub.name:
+                    neighbor = conn.hub2
+
+                if neighbor:
                     add_val: float = 1
-                    if conn.hub1.zone == ZoneType.RESTRICTED:
+                    if neighbor.zone == ZoneType.RESTRICTED:
                         add_val = 2
-                    elif curr_hub.zone == ZoneType.PRIORITY:
+                    elif neighbor.zone == ZoneType.PRIORITY:
                         add_val = 0.9
-                    elif curr_hub.zone == ZoneType.BLOCKED:
+                    elif neighbor.zone == ZoneType.BLOCKED:
                         continue
 
-                    if (scores[curr_hub.name] + add_val
-                            < scores[conn.hub1.name]):
-                        scores[conn.hub1.name] = (scores[curr_hub.name]
-                                                  + add_val)
-                        queue.append(conn.hub1)
+                    if scores[curr_hub.name] + add_val < scores[neighbor.name]:
+                        scores[neighbor.name] = scores[curr_hub.name] + add_val
+                        queue.append(neighbor)
         self.scores = scores
 
 
@@ -156,4 +174,5 @@ def algo_path(input_data: Input_Data) -> Input_Data:
             drone.path = drone_path
         else:
             raise ValueError("An error occured in the algorythm")
+    print("\n\n\n", path.reservation_hub)
     return input_data

@@ -22,7 +22,6 @@ class Hub(BaseModel):
     zone: ZoneType = Field(default=ZoneType.NORMAL)
     color: str = Field(default="gray")
     max_drones: int = Field(default=1)
-    nb_drones_in: List[Any] = Field(default=[])
 
     @model_validator(mode='after')
     def valid_name(self) -> Self:

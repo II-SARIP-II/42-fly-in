@@ -193,6 +193,8 @@ class DisplayScreen:
                     txt = "md" + str(hub.max_drones)
                     if hub.zone == ZoneType.RESTRICTED:
                         txt += "\nrestricted"
+                    elif hub.zone == ZoneType.PRIORITY:
+                        txt += "\npriority"
                     text1 = self.font.render(txt, True, (0, 0, 0))
                     textRect1 = text1.get_rect()
                     x, y = pos
