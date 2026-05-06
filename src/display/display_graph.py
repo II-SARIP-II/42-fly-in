@@ -9,20 +9,20 @@ class DisplayScreen:
     def __init__(self, input_data: Input_Data, total_move: Dict[int, int]):
         pygame.init()
         pygame.font.init()
-        self.font = pygame.font.SysFont('freesansbold', 15)
+        self.font = pygame.font.SysFont('freesansbold', 30)
         self.screen_size = pygame.display.Info()
-        self.heigh = self.screen_size.current_w - 150
-        self.width = self.screen_size.current_h - 100
-        self.screen = pygame.display.set_mode((self.heigh, self.width))
+        self.width = self.screen_size.current_w - 150
+        self.heigh = self.screen_size.current_h - 100
+        self.screen = pygame.display.set_mode((self.width, self.heigh))
         self.title = pygame.display.set_caption('Fly-In by Pgougne')
         self.clock = pygame.time.Clock()
-        self.camera = Camera(input_data.hubs, 1280, 720)
+        self.camera = Camera(input_data.hubs, self.width, self.heigh)
         self.running = True
         self.input_data = input_data
         self.max_x = self.get_max_x()
         self.max_y = self.get_max_y()
         self.current_tick = 0
-        self.hub_s = 20
+        self.hub_s = 50
         self.start = pygame.Vector2(0, 0)
         self.end = pygame.Vector2(0, 0)
         self.is_ant = False
@@ -105,7 +105,7 @@ class DisplayScreen:
             if count > 1:
                 txt = (self.font.render(str(count), True, (255, 0, 0)
                                         if self.is_ant else (0, 0, 0)))
-                self.screen.blit(txt, (p.x + 15, p.y + 15))
+                self.screen.blit(txt, (p.x + self.hub_s, p.y + self.hub_s))
 
     def draw_drones_and_counts(self,
                                frame: int,
@@ -228,6 +228,80 @@ class DisplayScreen:
                 textRect1.center = (px, py-10)
                 self.screen.blit(text, textRect1)
 
+    def render_inputs(self):
+        padding = 30
+        block_size = self.hub_s * 3
+        color_arrow = (255, 255, 255)
+        font = pygame.font.SysFont('freesansbold', 60)
+        base_points = [(0, 100), (0, 200), (200, 200), (200, 300), (300, 150), (200, 0), (200, 100)]
+
+        def draw_arrow(x_offset, y_offset, rotation):
+            """Trace la flèche centrée dans le carré avec une rotation donnée."""
+            points = []
+            size = block_size * 0.6 
+            margin = (block_size - size) / 2
+
+            for px, py in base_points:
+                nx, ny = px / 300, py / 300
+
+                if rotation == "left":
+                    rx, ry = 1 - nx, 1 - ny
+                elif rotation == "down":
+                    rx, ry = 1 - ny, nx
+                elif rotation == "up":
+                    rx, ry = ny, 1 - nx
+                else:
+                    rx, ry = nx, ny
+
+                final_x = x_offset + margin + (rx * size)
+                final_y = y_offset + margin + (ry * size)
+                points.append((final_x, final_y))
+
+            pygame.draw.polygon(self.screen, color_arrow, points)
+
+        x, y = padding, self.heigh - block_size - padding
+        pygame.draw.rect(self.screen, "black", pygame.Rect(x, y, block_size, block_size))
+        draw_arrow(x, y, "left")
+
+        x, y = padding * 2 + block_size, self.heigh - block_size - padding
+        pygame.draw.rect(self.screen, "black", pygame.Rect(x, y, block_size, block_size))
+        draw_arrow(x, y, "down")
+
+        x, y = padding * 3 + block_size * 2, self.heigh - block_size - padding
+        pygame.draw.rect(self.screen, "black", pygame.Rect(x, y, block_size, block_size))
+        draw_arrow(x, y, "right")
+
+        x, y = padding * 2 + block_size, self.heigh - block_size * 2 - padding * 2
+        pygame.draw.rect(self.screen, "black", pygame.Rect(x, y, block_size, block_size))
+        draw_arrow(x, y, "up")
+
+        rect_space = pygame.Rect(self.width/4, self.heigh - block_size - padding, self.width/2, block_size)
+        pygame.draw.rect(self.screen, "black", rect_space)
+
+        txt = font.render("SPACE", True, (255, 255, 255))
+        txt_rect = txt.get_rect(center=rect_space.center)
+        self.screen.blit(txt, txt_rect)
+
+        rect_f = pygame.Rect(self.width - padding - block_size, self.heigh - block_size - padding, block_size, block_size)
+        pygame.draw.rect(self.screen, "black", rect_f)
+        txt1 = font.render("F", True, (255, 255, 255))
+        txt1_rect = txt1.get_rect(center=rect_f.center)
+        self.screen.blit(txt1, txt1_rect)
+
+        rect_d = pygame.Rect(self.width - padding*2 - block_size*2, self.heigh - block_size - padding, block_size, block_size)
+        pygame.draw.rect(self.screen, "black", rect_d)
+
+        txt2 = font.render("D", True, (255, 255, 255))
+        txt2_rect = txt2.get_rect(center=rect_d.center)
+        self.screen.blit(txt2, txt2_rect)
+
+        rect_n = pygame.Rect(self.width - padding*3 - block_size*3, self.heigh - block_size - padding, block_size, block_size)
+        pygame.draw.rect(self.screen, "black", rect_n)
+
+        txt3 = font.render("N", True, (255, 255, 255))
+        txt3_rect = txt3.get_rect(center=rect_n.center)
+        self.screen.blit(txt3, txt3_rect)
+
     def render_top_right_corner(self, speed_fps: int) -> None:
         speed_percent = int((60 - speed_fps) * 100 / 60)
         mode = "ANT" if self.is_ant else "NORMAL"
@@ -243,14 +317,14 @@ class DisplayScreen:
         ]
 
         screen_w = self.screen.get_width()
-        margin = 20
-        y_offset = 20
+        margin = 30
+        y_offset = 30
 
         for i, line in enumerate(lines):
             color = (0, 0, 0) if not self.is_ant else (255, 255, 255)
             text_surf = self.font.render(line, True, color)
             text_rect = text_surf.get_rect(
-                topright=(screen_w - margin, y_offset + (i * 20))
+                topright=(screen_w - margin, y_offset + (i * 50))
                 )
             self.screen.blit(text_surf, text_rect)
 
@@ -328,6 +402,7 @@ class DisplayScreen:
             else:
                 self.screen.fill("white")
             self.render_lines()
+            self.render_inputs()
             self.render_circles()
 
             self.draw_drones_and_counts(frame, TICKS_PER_UPDATE)

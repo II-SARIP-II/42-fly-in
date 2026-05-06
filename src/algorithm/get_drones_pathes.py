@@ -130,7 +130,7 @@ class PathsFinding:
                     if conn.hub1.zone == ZoneType.RESTRICTED:
                         add_val = 2
                     elif curr_hub.zone == ZoneType.PRIORITY:
-                        add_val = 0.4
+                        add_val = 0.9
                     elif curr_hub.zone == ZoneType.BLOCKED:
                         continue
 
@@ -139,7 +139,6 @@ class PathsFinding:
                         scores[conn.hub1.name] = (scores[curr_hub.name]
                                                   + add_val)
                         queue.append(conn.hub1)
-
         self.scores = scores
 
 
