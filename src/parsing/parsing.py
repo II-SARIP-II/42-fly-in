@@ -99,7 +99,6 @@ def create_connection(line: str,
                 raise ValueError
             max_link = int(max_link_str)
         except Exception:
-            print(meta_title, max_link)
             raise ValueError("Input Error: max_link_capacity must be an "
                              "int and define like this: [max_link_capacity=1]")
     try:

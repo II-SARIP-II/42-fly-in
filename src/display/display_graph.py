@@ -1,6 +1,9 @@
+import os
+
 from ..parsing import Input_Data, ZoneType, Drone, Hub
 from .camera import Camera
 
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 import pygame
 from typing import Any, Dict
 
@@ -75,20 +78,21 @@ class DisplayScreen:
                                ) -> bool:
         if len(drone.path) > self.current_tick:
             hub = drone.path[self.current_tick]
+            if (self.current_tick > 0
+                    and hub.zone == ZoneType.RESTRICTED
+                    and hub != drone.path[self.current_tick - 1]):
+                curr_idx = min(self.current_tick - 1, len(drone.path) - 1)
+                next_idx = min(self.current_tick, len(drone.path) - 1)
+
+                hub_a = drone.path[curr_idx]
+                hub_b = drone.path[next_idx]
+                img = self.ant if self.is_ant else self.drone_img
+                rect = img.get_rect(center=self.get_hub_pos(
+                    (hub_b.x + hub_a.x)/2, (-hub_b.y + -hub_a.y)/2))
+                self.screen.blit(img, rect)
+                return True
         else:
             hub = drone.path[-1]
-        if (hub.zone == ZoneType.RESTRICTED
-                and hub != drone.path[self.current_tick - 1]):
-            curr_idx = min(self.current_tick - 1, len(drone.path) - 1)
-            next_idx = min(self.current_tick, len(drone.path) - 1)
-
-            hub_a = drone.path[curr_idx]
-            hub_b = drone.path[next_idx]
-            img = self.ant if self.is_ant else self.drone_img
-            rect = img.get_rect(center=self.get_hub_pos(
-                (hub_b.x + hub_a.x)/2, (-hub_b.y + -hub_a.y)/2))
-            self.screen.blit(img, rect)
-            return True
         cnt_per_hub[hub.name] = (cnt_per_hub.get(hub.name, 0) + 1)
         img = self.ant if self.is_ant else self.drone_img
         rect = img.get_rect(center=self.get_hub_pos(hub.x, -hub.y))
