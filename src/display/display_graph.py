@@ -22,7 +22,7 @@ class DisplayScreen:
         self.max_x = self.get_max_x()
         self.max_y = self.get_max_y()
         self.current_tick = 0
-        self.hub_s = 50
+        self.hub_s = self.heigh/42
         self.start = pygame.Vector2(0, 0)
         self.end = pygame.Vector2(0, 0)
         self.is_ant = False

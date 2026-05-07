@@ -53,6 +53,22 @@ Or the strict version:
 To debug:
 >make debug
 
+Input file:
+```bash
+# Example Level: Simple linear path
+nb_drones: 4
+
+start_hub: start 0 0 [color=green zone=restricted]
+hub: waypoint1 1 0 [color=blue max_drones=2 zone=restricted]
+hub: waypoint2 2 0 [color=blue]
+end_hub: goal 3 0 [color=rainbow max_drones=2]
+
+connection: start-waypoint1 [max_link_capacity=3]
+connection: waypoint1-waypoint2
+connection: waypoint2-goal
+
+```
+
 # Resources
 https://www.autodraw.com/\
 https://www.numberanalytics.com/blog/complete-dijkstra-algorithm-tutorial#when-to-use-a\
@@ -99,3 +115,5 @@ Like this:
 | f | toggle ant mode |
 | n | toggle hub name  |
 | d | toggle hub description |
+
+

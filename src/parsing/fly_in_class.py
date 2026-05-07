@@ -1,4 +1,4 @@
-from pydantic import BaseModel, model_validator, Field, ValidationError
+from pydantic import BaseModel, model_validator, Field
 
 from enum import Enum
 
@@ -26,7 +26,7 @@ class Hub(BaseModel):
     @model_validator(mode='after')
     def valid_name(self) -> Self:
         if "\\" in self.name or "/" in self.name or ":" in self.name:
-            raise ValidationError("The connection syntax forbids "
+            raise ValueError("The connection syntax forbids "
                                   "dashes in zone names")
         else:
             return self
@@ -49,20 +49,3 @@ class Input_Data(BaseModel):
     lst_drones: List[Drone] = Field(default=[])
     hubs: List[Hub] = Field(default=[])
     connections: List[Connection] = Field(default=[])
-
-    @model_validator(mode='after')
-    def valid_start_end(self) -> Self:
-        is_end = False
-        is_start = False
-        for hub in self.hubs:
-            if hub.is_start and is_start:
-                raise ValidationError("Input Error: It can only have "
-                                      "one start hub")
-            if hub.is_end and is_end:
-                raise ValidationError("Input Error: It can only have "
-                                      "one end hub")
-            if hub.is_start and not is_start:
-                is_start = True
-            if hub.is_end and not is_end:
-                is_end = True
-        return self

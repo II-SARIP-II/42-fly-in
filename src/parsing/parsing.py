@@ -2,7 +2,6 @@ import sys
 
 from .fly_in_class import Drone, Hub, Connection, Input_Data, ZoneType
 
-from pydantic import ValidationError
 from typing import List, Dict, Any
 
 
@@ -39,7 +38,7 @@ def create_hub_metadata(data: str,
     return data, hub_data
 
 
-def create_hub(line: str, lst_drones: List[Drone]) -> Hub:
+def create_hub(line: str, lst_drones: List[Drone], hubs: List[Hub]) -> Hub:
     title, data = line.split(": ")
     hub_data: Dict[str, Any] = {
         "is_start": False,
@@ -57,7 +56,7 @@ def create_hub(line: str, lst_drones: List[Drone]) -> Hub:
         try:
             data, hub_data = create_hub_metadata(data, hub_data)
         except Exception as e:
-            raise ValidationError(e)
+            raise ValueError(e)
     lst_major = data.split(" ")
     if len(lst_major) != 3:
         raise ValueError("Input Error: the hub creation must be define "
@@ -65,7 +64,7 @@ def create_hub(line: str, lst_drones: List[Drone]) -> Hub:
     hub_data["name"] = str(lst_major[0])
     hub_data["x"] = int(lst_major[1])
     hub_data["y"] = int(lst_major[2])
-    return Hub(**hub_data)
+    return Hub(**hub_data), hub_data["is_start"], hub_data["is_end"]
 
 
 def create_connection(line: str,
@@ -81,12 +80,16 @@ def create_connection(line: str,
         raise ValueError("Input Error: connection lines "
                          "must be 'connection: hub1-hub2'")
     max_link = 1
-    if " [max_link_capacity=" in data:
+    if " [" in data:
         data, metadata = data.split(" [")
         metadata = metadata.replace("]", "")
         try:
-            max_link = int(metadata.split("=")[1])
+            meta_title, max_link = metadata.split("=")
+            if meta_title != "max_link_capacity":
+                raise ValueError
+            max_link = int(max_link)
         except Exception:
+            print(meta_title, max_link)
             raise ValueError("Input Error: max_link_capacity must be an "
                              "int and define like this: [max_link_capacity=1]")
     try:
@@ -96,7 +99,7 @@ def create_connection(line: str,
                          "must be 'connection: hub1-hub2'")
     hub_map = {hub.name: hub for hub in lst_hubs}
     if name1 not in hub_map or name2 not in hub_map:
-        raise ValueError(f"Input Error: {data}, one or more hubs are invalid")
+        raise ValueError(f"Input Error: {data}, connection is invalid")
     hub1 = hub_map[name1]
     hub2 = hub_map[name2]
     next_id = 0
@@ -127,9 +130,9 @@ def drone_line(line: str,
     except Exception:
         raise ValueError(f"Error in line {idx}: Input Error: "
                          "nb_drones must be an integer")
-    if nb_drone < 0:
+    if nb_drone < 1:
         raise ValueError(f"Error in line {idx}: Input Error: "
-                         "nb_drones must be positive")
+                         "nb_drones must be greater than 0")
     return lst_drones
 
 
@@ -140,6 +143,8 @@ def read_file(filename: str) -> Input_Data:
     lst_drones: List[Drone] = []
     hubs: List[Hub] = []
     connections: List[Connection] = []
+    is_end = False
+    is_start = False
     for idx, line in enumerate(lst):
         if line.startswith("nb_drones: "):
             try:
@@ -153,7 +158,15 @@ def read_file(filename: str) -> Input_Data:
                 raise ValueError(f"Error in line {idx+1}: Input Error: "
                                  "The file must start with nb_drones: X")
             try:
-                hub = create_hub(line, lst_drones)
+                hub, temp_start, temp_end = create_hub(line, lst_drones, hubs)
+                if temp_end and is_end:
+                    raise ValueError("It must be only one end")
+                elif temp_end:
+                    is_end = True
+                if temp_start and is_start:
+                    raise ValueError("It must be only one start")
+                elif temp_start:
+                    is_start = True
                 if ((hub.is_start or hub.is_end)
                         and hub.zone == ZoneType.BLOCKED):
                     raise ValueError("Start and End cannot be blocked")
@@ -165,6 +178,9 @@ def read_file(filename: str) -> Input_Data:
             if not set_drone:
                 raise ValueError(f"Error in line {idx+1}: Input Error: "
                                  "The file must start with nb_drones: X")
+            if not is_start or not is_end:
+                raise ValueError(f"Error in line {idx+1}: Input Error: "
+                                 "Define hubs before connections")
             try:
                 connections.append(create_connection(line, hubs, connections))
             except Exception as e:
@@ -188,7 +204,5 @@ def parsing() -> Input_Data:
     try:
         input_data: Input_Data = read_file(sys.argv[1])
         return input_data
-    except ValidationError as e:
-        raise ValidationError(e.errors()[0]['msg'])
     except Exception as e:
         raise Exception(e)
