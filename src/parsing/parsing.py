@@ -52,10 +52,12 @@ def create_hub(line: str, lst_drones: List[Drone]) -> tuple[Hub, bool, bool]:
         hub_data["nb_drones_in"] = lst_drones
     if title == "end_hub":
         hub_data["is_end"] = True
+    if "  " in data:
+        raise ValueError("Too much spaces detected")
     if " [" in data:
         if "]" != line[-1:]:
             raise ValueError("Input Error: line must end with ] "
-                             "is metadata are passed")
+                             "if metadata are passed")
         try:
             data, hub_data = create_hub_metadata(data, hub_data)
         except Exception as e:
@@ -83,10 +85,12 @@ def create_connection(line: str,
         raise ValueError("Input Error: connection lines "
                          "must be 'connection: hub1-hub2'")
     max_link = 1
+    if "  " in data:
+        raise ValueError("Too much spaces detected")
     if " [" in data:
         if "]" != line[-1:]:
             raise ValueError("Input Error: line must end with ] "
-                             "is metadata are passed")
+                             "if metadata are passed")
         data, metadata = data.split(" [")
         metadata = metadata.replace("]", "")
         try:
