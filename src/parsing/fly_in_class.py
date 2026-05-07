@@ -27,7 +27,7 @@ class Hub(BaseModel):
     def valid_name(self) -> Self:
         if "\\" in self.name or "/" in self.name or ":" in self.name:
             raise ValueError("The connection syntax forbids "
-                                  "dashes in zone names")
+                             "dashes in zone names")
         else:
             return self
 

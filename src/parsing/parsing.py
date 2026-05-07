@@ -38,7 +38,7 @@ def create_hub_metadata(data: str,
     return data, hub_data
 
 
-def create_hub(line: str, lst_drones: List[Drone], hubs: List[Hub]) -> Hub:
+def create_hub(line: str, lst_drones: List[Drone]) -> tuple[Hub, bool, bool]:
     title, data = line.split(": ")
     hub_data: Dict[str, Any] = {
         "is_start": False,
@@ -84,10 +84,10 @@ def create_connection(line: str,
         data, metadata = data.split(" [")
         metadata = metadata.replace("]", "")
         try:
-            meta_title, max_link = metadata.split("=")
+            meta_title, max_link_str = metadata.split("=")
             if meta_title != "max_link_capacity":
                 raise ValueError
-            max_link = int(max_link)
+            max_link = int(max_link_str)
         except Exception:
             print(meta_title, max_link)
             raise ValueError("Input Error: max_link_capacity must be an "
@@ -158,7 +158,7 @@ def read_file(filename: str) -> Input_Data:
                 raise ValueError(f"Error in line {idx+1}: Input Error: "
                                  "The file must start with nb_drones: X")
             try:
-                hub, temp_start, temp_end = create_hub(line, lst_drones, hubs)
+                hub, temp_start, temp_end = create_hub(line, lst_drones)
                 if temp_end and is_end:
                     raise ValueError("It must be only one end")
                 elif temp_end:
