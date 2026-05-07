@@ -81,6 +81,7 @@ AI use:
 - Understand how to build the dictionnary that stores the reservation table.
 - Explain me some complex concept
 - Occasionally debug
+- Center letters/arrows in the layout
 
 # Algorithm Description
 
@@ -117,3 +118,29 @@ Like this:
 | d | toggle hub description |
 
 
+In the normal mode, drones are drones, hubs are colored circles, and connections are simple lines.
+
+![Example of fly-in render](assets/README_normal.png "Normal version")
+
+
+I made a ant version of fly-in because ants are very smart, and they made their own algorithm to find the shortest path to reach food.
+Even if they don't use djikstra or A*, this is funny.
+
+In this version, drones are ants, hubs are anthills and connections are still simple lines BUT the goal is banana peel
+
+![Example of fly-in render, ant mode on](assets/README_ant.png "Ant version")
+
+
+# Ouput example:
+
+for the easy/01 with restricted on goal the output will be:
+t1: D0-start-waypoint1 D1-start-waypoint1 
+t2: D0-waypoint1 D1-waypoint1 D2-start-waypoint1 
+t3: D0-waypoint2 D2-waypoint1 
+t4: D0-waypoint2-goal D1-waypoint2 
+t5: D0-goal D1-waypoint2-goal D2-waypoint2 
+t6: D1-goal D2-waypoint2-goal 
+t7: D2-goal
+
+I decided to not print the t0 because it is useless to show that nobody moving.
+Each turn, it prints the current hub or connection if the drone is moving
