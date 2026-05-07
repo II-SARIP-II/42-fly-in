@@ -1,9 +1,6 @@
-import os
-
 from ..parsing import Input_Data, ZoneType, Drone, Hub
 from .camera import Camera
 
-os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 import pygame
 from typing import Any, Dict
 
