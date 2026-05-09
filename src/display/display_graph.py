@@ -171,8 +171,8 @@ class DisplayScreen:
             hy: int = y of the hub
             color: str = color of the hub
         '''
-        start = pygame.Vector2(self.get_hub_pos(hx, hy))
-        end = pygame.Vector2(self.get_hub_pos(hx, hy))
+        start = pygame.Vector2(self.get_hub_pos(hx, -hy))
+        end = pygame.Vector2(self.get_hub_pos(hx, -hy))
         sx, sy = start
         start = pygame.Vector2((sx - self.hub_s, sy - self.hub_s))
         ex, ey = end
@@ -180,10 +180,10 @@ class DisplayScreen:
         line_color = "black" if color != "black" else "white"
         pygame.draw.line(self.screen, line_color, start, end, width=4)
 
-        start = pygame.Vector2(self.get_hub_pos(hx, hy))
+        start = pygame.Vector2(self.get_hub_pos(hx, -hy))
         sx, sy = start
         start = pygame.Vector2(sx + self.hub_s, sy - self.hub_s)
-        end = pygame.Vector2(self.get_hub_pos(hx, hy))
+        end = pygame.Vector2(self.get_hub_pos(hx, -hy))
         ex, ey = end
         end = pygame.Vector2(ex - self.hub_s, ey + self.hub_s)
         pygame.draw.line(self.screen, line_color, start, end, width=4)
