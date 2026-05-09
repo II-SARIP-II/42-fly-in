@@ -45,9 +45,11 @@ class PathsFinding:
 
     def is_free_connection(self, connection: Connection, time: int) -> bool:
         '''
-        Return True if the drone can pass by the target connection in the right time
+        Return True if the drone can pass by the target connection in
+            the right time
         Params:
-            connection: Connection = The target connection to potentially cross the next turn
+            connection: Connection = The target connection to potentially
+                cross the next turn
             time: int = which turn the drone tries to cross the connection
         Return value:
             bool = True if it can cross the connection else it returns False
@@ -59,11 +61,13 @@ class PathsFinding:
 
     def reserve_hub(self, hub: Hub, time: int, delta_t: int) -> None:
         '''
-        Reserve the hub for the next turn to let know to other drones that the place is taken
+        Reserve the hub for the next turn to let know to other drones
+            that the place is taken
         Params:
             hub: Hub = The target hub to reserve
             time: int = current time
-            delta_t = difference between current time and the time we want to reserve
+            delta_t = difference between current time and the time we want
+                to reserve
         '''
         if not self.reservation_hub[hub.name].get(time + delta_t):
             self.reservation_hub[hub.name][time + delta_t] = 1
@@ -74,7 +78,8 @@ class PathsFinding:
                            connection: Connection,
                            time: int) -> None:
         '''
-        Reserve the connection for the next turn to let know to other drones that the place is taken (mostly for Restricted)
+        Reserve the connection for the next turn to let know to other
+            drones that the place is taken (mostly for Restricted)
         Params:
             connection: Connection = The target connection to reserve
             time: int = current time
@@ -94,7 +99,8 @@ class PathsFinding:
             curr_hub: Hub = the target hub to find their neighbor
             curr_time: int = To look if the neighbor are free in this time
         Return Value:
-            List[tuple[Hub, Connection, int]]: List of neighbor with the (next_hub, connection, delta_t)
+            List[tuple[Hub, Connection, int]]: List of neighbor with
+                the (next_hub, connection, delta_t)
         '''
         neighbors_data = []
         for conn in self.input_data.connections:

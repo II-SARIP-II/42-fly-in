@@ -11,7 +11,8 @@ class DisplayScreen:
         Initialisation of display class
         Params:
             input_data: Input_Data = drones, hubs and connections data
-            total_move: Dict[int, int] = Each turn, how many move have been done
+            total_move: Dict[int, int] = Each turn, how many moves
+                have been done
         '''
         pygame.init()
         pygame.font.init()
@@ -20,7 +21,7 @@ class DisplayScreen:
         self.width = self.screen_size.current_w - 150
         self.heigh = self.screen_size.current_h - 100
         self.screen = pygame.display.set_mode((self.width, self.heigh))
-        self.title = pygame.display.set_caption('Fly-In by Pgougne')
+        pygame.display.set_caption('Fly-In by Pgougne')
         self.clock = pygame.time.Clock()
         self.camera = Camera(input_data.hubs, self.width, self.heigh)
         self.running = True
@@ -45,7 +46,8 @@ class DisplayScreen:
                                 cnt_per_hub: Dict[str, int],
                                 ) -> None:
         '''
-        Display drones when self.stop == False, to make an animation for each movement
+        Display drones when self.stop == False, to make an
+            animation for each movement
         Params
             frame: int = the current frame
             TICKS_PER_UPDATE: int : the number of frame to change turn
@@ -130,7 +132,7 @@ class DisplayScreen:
             hub = hub_map[name]
             p = pygame.Vector2(self.get_hub_pos(hub.x, -hub.y))
             if count > 1:
-                txt = (self.font.render(str(count)+ f"/{hub.max_drones}",
+                txt = (self.font.render(str(count) + f"/{hub.max_drones}",
                                         True, (255, 0, 0)
                                         if self.is_ant else (0, 0, 0)))
                 self.screen.blit(txt, (p.x + self.hub_s, p.y + self.hub_s))
@@ -172,18 +174,18 @@ class DisplayScreen:
         start = pygame.Vector2(self.get_hub_pos(hx, hy))
         end = pygame.Vector2(self.get_hub_pos(hx, hy))
         sx, sy = start
-        start = (sx - self.hub_s, sy - self.hub_s)
+        start = pygame.Vector2((sx - self.hub_s, sy - self.hub_s))
         ex, ey = end
-        end = (ex + self.hub_s, ey + self.hub_s)
+        end = pygame.Vector2((ex + self.hub_s, ey + self.hub_s))
         line_color = "black" if color != "black" else "white"
         pygame.draw.line(self.screen, line_color, start, end, width=4)
 
         start = pygame.Vector2(self.get_hub_pos(hx, hy))
         sx, sy = start
-        start = sx + self.hub_s, sy - self.hub_s
+        start = pygame.Vector2(sx + self.hub_s, sy - self.hub_s)
         end = pygame.Vector2(self.get_hub_pos(hx, hy))
         ex, ey = end
-        end = ex - self.hub_s, ey + self.hub_s
+        end = pygame.Vector2(ex - self.hub_s, ey + self.hub_s)
         pygame.draw.line(self.screen, line_color, start, end, width=4)
 
     def render_circles(self) -> None:
@@ -191,6 +193,8 @@ class DisplayScreen:
         Display all hubs
         '''
         for hub in self.input_data.hubs:
+            x: float
+            y: float
             pos = pygame.Vector2(self.get_hub_pos(hub.x, -hub.y))
             if not self.is_ant:
                 if hub.color == "rainbow":
@@ -289,7 +293,10 @@ class DisplayScreen:
                        (200, 300), (300, 150),
                        (200, 0), (200, 100)]
 
-        def draw_arrow(x_offset: int, y_offset: int, rotation: str) -> None:
+        def draw_arrow(x_offset: float,
+                       y_offset: float,
+                       rotation: str
+                       ) -> None:
             """Draw arrow for layout"""
             points = []
             size = block_size * 0.6
@@ -313,6 +320,8 @@ class DisplayScreen:
 
             pygame.draw.polygon(self.screen, color_arrow, points)
 
+        x: float
+        y: float
         x, y = padding, self.heigh - block_size - padding
         pygame.draw.rect(self.screen,
                          "gray31", pygame.Rect(x, y, block_size, block_size))

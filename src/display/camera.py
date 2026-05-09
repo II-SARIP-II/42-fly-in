@@ -47,12 +47,14 @@ class Camera:
                           logical_y: float
                           ) -> tuple[int, int]:
         '''
-        get the coords of anything with in the window like hub, connection drones etc.
+        get the coords of anything with in the window like hub,
+            connection drones etc.
         Params:
             logical_x: float = the x of the target to position
             logical_y: float = the y of the target to position
         Return values:
-            tuple[int, int] = the translated coords of target in the projection (x, y) 
+            tuple[int, int] = the translated coords of target
+                in the projection (x, y)
         '''
         screen_x = int(logical_x * self.scale + self.offset_x + self.add_x)
         screen_y = int(-logical_y * self.scale + self.offset_y + self.add_y)

@@ -56,7 +56,7 @@ def create_hub(line: str) -> tuple[Hub, bool, bool]:
     Return value:
         Hub: Hub = the created hub
         bool = to know if the created hub was the start
-        bool = to know if the created hub was the end 
+        bool = to know if the created hub was the end
     '''
     title, data = line.split(": ")
     hub_data: Dict[str, Any] = {
