@@ -132,7 +132,7 @@ def create_connection(line: str,
                 raise ValueError("Input Error: max_link_capacity must be >")
         except Exception:
             raise ValueError("Input Error: max_link_capacity must be an "
-                             "int > 0 and define like this: [max_link_capacity=1]")
+                             "int > 0 and define like: [max_link_capacity=1]")
     try:
         name1, name2 = data.split("-")
     except Exception:
