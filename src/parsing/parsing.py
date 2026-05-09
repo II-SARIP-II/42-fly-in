@@ -217,6 +217,11 @@ def read_file(filename: str) -> Input_Data:
                                  "The file must start with nb_drones: X")
             try:
                 hub, temp_start, temp_end = create_hub(line)
+                for h in hubs:
+                    if h.name == hub.name:
+                        raise ValueError("duplicate hub name")
+                    if h.x == hub.x and h.y == hub.y:
+                        raise ValueError("duplicate hub position")
                 if temp_end and is_end:
                     raise ValueError("It must be only one end")
                 elif temp_end:
