@@ -10,7 +10,6 @@ uninstall:
 
 run:
 	@python -m src maps/easy/01_linear_path.txt
-
 debug:
 	python -m pdb src/__main__.py
 
@@ -19,11 +18,11 @@ clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} +
 
 lint:
-	$(FLK) . --extend-exclude .venv
+	$(FLK) .
 	$(MYPY) . $(FLAGS)
 
 lint-strict:
-	$(FLK) . --extend-exclude .venv
+	$(FLK) .
 	$(MYPY) . $(FLAGS) --strict
 
 .PHONY: install, uninstall, run, debug, clean, lint, lint-strict
