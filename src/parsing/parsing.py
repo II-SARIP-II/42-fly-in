@@ -42,6 +42,8 @@ def create_hub_metadata(data: str,
                 except Exception:
                     raise ValueError("Input Error: Metadata: "
                                      "the max_drones value must be an integer")
+                if hub_data["max_drones"] < 1:
+                    raise ValueError("Input Error: max_drones must be > 0")
             case _:
                 raise ValueError("Input Error: Only zone, color and "
                                  "max_drones can be in meta data")
@@ -126,9 +128,11 @@ def create_connection(line: str,
             if meta_title != "max_link_capacity":
                 raise ValueError
             max_link = int(max_link_str)
+            if max_link < 1:
+                raise ValueError("Input Error: max_link_capacity must be >")
         except Exception:
             raise ValueError("Input Error: max_link_capacity must be an "
-                             "int and define like this: [max_link_capacity=1]")
+                             "int > 0 and define like this: [max_link_capacity=1]")
     try:
         name1, name2 = data.split("-")
     except Exception:
