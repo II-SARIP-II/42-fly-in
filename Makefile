@@ -5,11 +5,9 @@ FLAGS	:= --warn-return-any --warn-unused-ignores --ignore-missing-imports --disa
 install:
 	pip install pydantic pygame-ce mypy flake8
 
-uninstall:
-	pip uninstall pydantic pygame-ce
-
 run:
 	@python -m src maps/easy/01_linear_path.txt
+
 debug:
 	python -m pdb src/__main__.py
 
@@ -25,4 +23,4 @@ lint-strict:
 	$(FLK) .
 	$(MYPY) . $(FLAGS) --strict
 
-.PHONY: install, uninstall, run, debug, clean, lint, lint-strict
+.PHONY: install, run, debug, clean, lint, lint-strict
