@@ -44,6 +44,7 @@ class DisplayScreen:
                                 TICKS_PER_UPDATE: int,
                                 drone: Drone,
                                 cnt_per_hub: Dict[str, int],
+                                cnt_per_con: Dict[tuple[int, int], int]
                                 ) -> None:
         '''
         Display drones when self.stop == False, to make an
@@ -66,6 +67,9 @@ class DisplayScreen:
             if hub_a != hub_b:
                 pos_b = pygame.Vector2(self.get_hub_pos(
                     (hub_b.x + hub_a.x)/2, (-hub_b.y + -hub_a.y)/2))
+                calc = (hub_b.x + hub_a.x)/2, (-hub_b.y + -hub_a.y)/2
+                cnt_per_con[calc] = (cnt_per_con.get(calc, 0) + 1)
+                
 
             else:
                 if self.current_tick >= 1:
@@ -87,7 +91,8 @@ class DisplayScreen:
 
     def display_freezed_drones(self,
                                drone: Drone,
-                               cnt_per_hub: Dict[str, int]
+                               cnt_per_hub: Dict[str, int],
+                               cnt_per_con: Dict[tuple[int, int], int]
                                ) -> bool:
         '''
         Display freezed drones when self.stop == True
@@ -105,6 +110,8 @@ class DisplayScreen:
 
                 hub_a = drone.path[curr_idx]
                 hub_b = drone.path[next_idx]
+                calc = (hub_b.x + hub_a.x)/2, (-hub_b.y + -hub_a.y)/2
+                cnt_per_con[calc] = (cnt_per_con.get(calc, 0) + 1)
                 img = self.ant if self.is_ant else self.drone_img
                 rect = img.get_rect(center=self.get_hub_pos(
                     (hub_b.x + hub_a.x)/2, (-hub_b.y + -hub_a.y)/2))
@@ -120,7 +127,8 @@ class DisplayScreen:
 
     def txt_multiple_drones(self,
                             cnt_per_hub: Dict[str, int],
-                            hub_map: Dict[str, Hub]
+                            hub_map: Dict[str, Hub],
+                            cnt_per_con: Dict[tuple[int, int], int]
                             ) -> None:
         '''
         Display number of drones on each hub
@@ -136,6 +144,19 @@ class DisplayScreen:
                                         True, (255, 0, 0)
                                         if self.is_ant else (0, 0, 0)))
                 self.screen.blit(txt, (p.x + self.hub_s, p.y + self.hub_s))
+        for calc, count in cnt_per_con.items():
+            cx, cy = calc
+            for con in self.input_data.connections:
+                comp = (con.hub2.x + con.hub1.x)/2, (-con.hub2.y + -con.hub1.y)/2
+                cmx, cmy = comp
+                if abs(cmx - cx) < 0.1 and abs(cmy - cy) < 0.1:
+                    mxd = con.max_link_capacity
+                    break
+            txt = (self.font.render(str(count) + f"/{str(mxd)}",
+                                    True, (255, 0, 0)
+                                    if self.is_ant else (0, 0, 0)))
+            p = pygame.Vector2(self.get_hub_pos(cx, cy))
+            self.screen.blit(txt, (p.x + self.hub_s, p.y + self.hub_s))
 
     def draw_drones_and_counts(self,
                                frame: int,
@@ -149,6 +170,7 @@ class DisplayScreen:
         '''
         cnt_per_hub: Dict[str, int] = {}
         hub_map = {hub.name: hub for hub in self.input_data.hubs}
+        cnt_per_con: Dict[tuple[int, int], int] = {}
         for drone in self.input_data.lst_drones:
             if not drone.path:
                 continue
@@ -156,12 +178,12 @@ class DisplayScreen:
             if not self.stop:
                 self.display_drones_movement(frame,
                                              TICKS_PER_UPDATE,
-                                             drone, cnt_per_hub)
+                                             drone, cnt_per_hub, cnt_per_con)
             else:
-                if self.display_freezed_drones(drone, cnt_per_hub):
+                if self.display_freezed_drones(drone, cnt_per_hub, cnt_per_con):
                     continue
 
-        self.txt_multiple_drones(cnt_per_hub, hub_map)
+        self.txt_multiple_drones(cnt_per_hub, hub_map, cnt_per_con)
 
     def blocked_zone(self, hx: int, hy: int, color: str) -> None:
         '''
