@@ -225,10 +225,14 @@ def read_file(filename: str) -> Input_Data:
                 if temp_end and is_end:
                     raise ValueError("It must be only one end")
                 elif temp_end:
+                    if len(lst_drones) > hub.max_drones:
+                        raise ValueError("Not enough capacity in end hub")
                     is_end = True
                 if temp_start and is_start:
                     raise ValueError("It must be only one start")
                 elif temp_start:
+                    if len(lst_drones) > hub.max_drones:
+                        raise ValueError("Not enough capacity in start hub")
                     is_start = True
                 if ((hub.is_start or hub.is_end)
                         and hub.zone == ZoneType.BLOCKED):
