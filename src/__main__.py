@@ -6,6 +6,10 @@ from .output.output_constructor import build_output
 
 
 def main() -> None:
+    '''
+        Main function that call each part of the project
+            in the right order
+    '''
     try:
         input_data: Input_Data = parsing()
         input_data = algo_path(input_data)

@@ -7,6 +7,12 @@ from typing import Any, Dict
 
 class DisplayScreen:
     def __init__(self, input_data: Input_Data, total_move: Dict[int, int]):
+        '''
+        Initialisation of display class
+        Params:
+            input_data: Input_Data = drones, hubs and connections data
+            total_move: Dict[int, int] = Each turn, how many move have been done
+        '''
         pygame.init()
         pygame.font.init()
         self.font = pygame.font.SysFont('freesansbold', 30)
@@ -38,6 +44,14 @@ class DisplayScreen:
                                 drone: Drone,
                                 cnt_per_hub: Dict[str, int],
                                 ) -> None:
+        '''
+        Display drones when self.stop == False, to make an animation for each movement
+        Params
+            frame: int = the current frame
+            TICKS_PER_UPDATE: int : the number of frame to change turn
+            drone: Drone = the current drone
+            cnt_per_hub: Dict[str, int] number of drone per hub to print if > 1
+        '''
         curr_idx = min(self.current_tick, len(drone.path) - 1)
         next_idx = min(self.current_tick + 1, len(drone.path) - 1)
 
@@ -73,6 +87,12 @@ class DisplayScreen:
                                drone: Drone,
                                cnt_per_hub: Dict[str, int]
                                ) -> bool:
+        '''
+        Display freezed drones when self.stop == True
+        Params
+            drone: Drone = the current drone
+            cnt_per_hub: Dict[str, int] number of drone per hub to print if > 1
+        '''
         if len(drone.path) > self.current_tick:
             hub = drone.path[self.current_tick]
             if (self.current_tick > 0
@@ -100,11 +120,18 @@ class DisplayScreen:
                             cnt_per_hub: Dict[str, int],
                             hub_map: Dict[str, Hub]
                             ) -> None:
+        '''
+        Display number of drones on each hub
+        Params
+            cnt_per_hub: Dict[str, int] number of drone per hub to print if > 1
+            hub_map: Dict[str, Hub] = map of all hubs and their name
+        '''
         for name, count in cnt_per_hub.items():
             hub = hub_map[name]
             p = pygame.Vector2(self.get_hub_pos(hub.x, -hub.y))
             if count > 1:
-                txt = (self.font.render(str(count), True, (255, 0, 0)
+                txt = (self.font.render(str(count)+ f"/{hub.max_drones}",
+                                        True, (255, 0, 0)
                                         if self.is_ant else (0, 0, 0)))
                 self.screen.blit(txt, (p.x + self.hub_s, p.y + self.hub_s))
 
@@ -112,6 +139,12 @@ class DisplayScreen:
                                frame: int,
                                TICKS_PER_UPDATE: int
                                ) -> None:
+        '''
+        switch between movement and freezed drone and then display the text
+        Params
+            frame: int = the current frame
+            TICKS_PER_UPDATE: int : the number of frame to change turn
+        '''
         cnt_per_hub: Dict[str, int] = {}
         hub_map = {hub.name: hub for hub in self.input_data.hubs}
         for drone in self.input_data.lst_drones:
@@ -129,6 +162,13 @@ class DisplayScreen:
         self.txt_multiple_drones(cnt_per_hub, hub_map)
 
     def blocked_zone(self, hx: int, hy: int, color: str) -> None:
+        '''
+        Display a cross on the blocked hub
+        Params:
+            hx: int = x of the hub
+            hy: int = y of the hub
+            color: str = color of the hub
+        '''
         start = pygame.Vector2(self.get_hub_pos(hx, hy))
         end = pygame.Vector2(self.get_hub_pos(hx, hy))
         sx, sy = start
@@ -147,6 +187,9 @@ class DisplayScreen:
         pygame.draw.line(self.screen, line_color, start, end, width=4)
 
     def render_circles(self) -> None:
+        '''
+        Display all hubs
+        '''
         for hub in self.input_data.hubs:
             pos = pygame.Vector2(self.get_hub_pos(hub.x, -hub.y))
             if not self.is_ant:
@@ -214,6 +257,9 @@ class DisplayScreen:
                                       y - (self.hub_s)))
 
     def render_lines(self) -> None:
+        '''
+        Display all connections
+        '''
         for connection in self.input_data.connections:
             start = pygame.Vector2(self.get_hub_pos(connection.hub1.x,
                                                     -connection.hub1.y))
@@ -232,6 +278,9 @@ class DisplayScreen:
                 self.screen.blit(text, textRect1)
 
     def render_inputs(self) -> None:
+        '''
+        Display the layout
+        '''
         padding = 30
         block_size = self.hub_s * 3
         color_arrow = (255, 255, 255)
@@ -321,6 +370,9 @@ class DisplayScreen:
         self.screen.blit(txt3, txt3_rect)
 
     def render_top_right_corner(self, speed_fps: int) -> None:
+        '''
+        Display information of the current simulation
+        '''
         speed_percent = int((60 - speed_fps) * 100 / 60)
         mode = "ANT" if self.is_ant else "NORMAL"
 
@@ -350,6 +402,9 @@ class DisplayScreen:
                       frame: int,
                       TICKS_PER_UPDATE: int
                       ) -> tuple[int, int]:
+        '''
+        Control all actions made by the user
+        '''
         for event in pygame.event.get():
             match event.type:
                 case pygame.QUIT:
@@ -398,6 +453,9 @@ class DisplayScreen:
         return frame, TICKS_PER_UPDATE
 
     def run(self) -> None:
+        '''
+        The simulation loop that manages everything
+        '''
         frame = 0
         TICKS_PER_UPDATE = 30
 
@@ -429,21 +487,35 @@ class DisplayScreen:
             self.clock.tick(60)
 
     def get_max_x(self) -> Any:
+        '''
+        get the delta between max x and min x of all hubs to
+            display perfectly in the screen
+        '''
         lsthubx = [hub.x for hub in self.input_data.hubs]
         max_int = max(lsthubx)
         min_int = min(lsthubx)
         return max_int - min_int
 
     def get_max_y(self) -> Any:
+        '''
+        get the delta between max y and min y of all hubs to
+            display perfectly in the screen
+        '''
         lsthuby = [hub.y for hub in self.input_data.hubs]
         max_int = max(lsthuby)
         min_int = min(lsthuby)
         return max_int - min_int
 
     def get_hub_pos(self, x: float, y: float) -> tuple[int, int]:
+        '''
+        get the translated position on the screen with just (x, y) values
+        '''
         return self.camera.get_screen_coords(x, y)
 
     def load_imgs(self) -> None:
+        '''
+        Load all requiered images from assets
+        '''
         original_img = pygame.image.load("assets/drone.png").convert_alpha()
         sand = pygame.image.load("assets/sand-bg.jpg").convert_alpha()
         ant = pygame.image.load("assets/ant.png").convert_alpha()
@@ -466,11 +538,11 @@ class DisplayScreen:
     def _get_valid_color(color_name: str | None) -> str:
         """Return a pygame-safe color name with fallback.
 
-        Args:
-            color_name: Candidate color name from metadata.
+        Params:
+            color_name: str = Candidate color name from metadata.
 
-        Returns:
-            Valid color string accepted by pygame.
+        Return value:
+            str = Valid color string accepted by pygame.
         """
         if not color_name:
             return "gray"
@@ -486,6 +558,9 @@ class DisplayScreen:
 
 
 def display(input_data: Input_Data, total_move: Dict[int, int]) -> None:
+    '''
+    The function calling the class and runs it
+    '''
     game = DisplayScreen(input_data, total_move)
     game.load_imgs()
     game.run()

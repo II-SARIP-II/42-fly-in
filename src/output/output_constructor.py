@@ -4,6 +4,14 @@ from typing import List, Dict
 
 
 def build_output(drones: List[Drone]) -> Dict[int, int]:
+    '''
+    Display all movements of drones turn by turn
+    Params:
+        drones: Drones = All drones with their id and their path
+    Return value:
+        Dict[int, int] = how many movement has been done since
+            the beginning of the simulation
+    '''
     if not drones:
         return {}
 

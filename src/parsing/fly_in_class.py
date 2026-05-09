@@ -1,12 +1,13 @@
 from pydantic import BaseModel, model_validator, Field
-
 from enum import Enum
-
 from typing_extensions import Self
 from typing import List, Any
 
 
 class ZoneType(Enum):
+    '''
+    All possible zone types
+    '''
     NORMAL = "normal"
     BLOCKED = "blocked"
     RESTRICTED = "restricted"
@@ -14,6 +15,9 @@ class ZoneType(Enum):
 
 
 class Hub(BaseModel):
+    '''
+    Hub class to store each specification of hub
+    '''
     name: str
     x: int
     y: int
@@ -33,6 +37,9 @@ class Hub(BaseModel):
 
 
 class Connection(BaseModel):
+    '''
+    Connection class to store each specification of connections
+    '''
     connection_id: int
     hub1: Hub
     hub2: Hub
@@ -41,11 +48,18 @@ class Connection(BaseModel):
 
 
 class Drone(BaseModel):
+    '''
+    Drones class to get their id and their path
+    '''
     drone_id: int
     path: List[Hub] = Field(default=[])
 
 
 class Input_Data(BaseModel):
+    '''
+    Input_Data class to store all drones, all hubs, and all connections
+        from the simulation
+    '''
     lst_drones: List[Drone] = Field(default=[])
     hubs: List[Hub] = Field(default=[])
     connections: List[Connection] = Field(default=[])
