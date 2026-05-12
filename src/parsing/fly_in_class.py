@@ -25,7 +25,7 @@ class Hub(BaseModel):
     is_end: bool = Field(default=False)
     zone: ZoneType = Field(default=ZoneType.NORMAL)
     color: str = Field(default="gray")
-    max_drones: int = Field(default=1)
+    max_drones: int = Field(default=1, ge=1)
 
     @model_validator(mode='after')
     def valid_name(self) -> Self:
@@ -43,7 +43,7 @@ class Connection(BaseModel):
     connection_id: int
     hub1: Hub
     hub2: Hub
-    max_link_capacity: int = Field(default=1)
+    max_link_capacity: int = Field(default=1, ge=1)
     nb_drones_in: List[Any] = Field(default=[])
 
 
