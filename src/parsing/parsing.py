@@ -126,7 +126,11 @@ def create_connection(line: str,
             raise ValueError("Input Error: line must end with ] "
                              "if metadata are passed")
         data, metadata = data.split(" [")
-        metadata = metadata.replace("]", "")
+        import re
+        if len(re.findall(r"\[", metadata)) != 0 or len(re.findall(r"\]", metadata)) != 1:
+            raise ValueError("Input Error: Metadata: "
+                             "[ or ] format not respected")
+        metadata = metadata.replace("]", "").strip()
         try:
             meta_title, max_link_str = metadata.split("=")
             if meta_title != "max_link_capacity":
