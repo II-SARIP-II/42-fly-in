@@ -17,6 +17,8 @@ def main() -> None:
         display(input_data, total_movement)
     except Exception as e:
         print(e)
+    except KeyboardInterrupt:
+        print("\nKeyboardInterrupt")
 
 
 if __name__ == "__main__":

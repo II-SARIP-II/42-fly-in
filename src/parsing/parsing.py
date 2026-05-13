@@ -215,14 +215,14 @@ def read_file(filename: str) -> Input_Data:
     is_end = False
     is_start = False
     for idx, line in enumerate(lst):
-        if line.startswith("nb_drones: "):
+        if line.startswith("nb_drones: ") and "#" not in line:
             try:
                 lst_drones = drone_line(line, idx+1, lst_drones, set_drone)
                 set_drone = True
             except Exception as e:
                 raise ValueError(e)
 
-        elif line.startswith(("hub:", "start_hub:", "end_hub:")):
+        elif line.startswith(("hub:", "start_hub:", "end_hub:")) and "#" not in line:
             if not set_drone:
                 raise ValueError(f"Error in line {idx+1}: Input Error: "
                                  "The file must start with nb_drones: X")
@@ -252,7 +252,7 @@ def read_file(filename: str) -> Input_Data:
             except Exception as e:
                 raise ValueError(f"Error in line {idx+1}: {e}")
 
-        elif line.startswith("connection:"):
+        elif line.startswith("connection:") and "#" not in line:
             if not set_drone:
                 raise ValueError(f"Error in line {idx+1}: Input Error: "
                                  "The file must start with nb_drones: X")
@@ -268,7 +268,11 @@ def read_file(filename: str) -> Input_Data:
             pass
 
         else:
-            raise ValueError(f"Error in line {idx+1}: unknown line")
+            if "#" in line:
+                raise ValueError(f"Error in line {idx+1}: Invalid comment "
+                                 "or unknown line")
+            else:
+                raise ValueError(f"Error in line {idx+1}: unknown line")
 
     return Input_Data(lst_drones=lst_drones,
                       hubs=hubs,
