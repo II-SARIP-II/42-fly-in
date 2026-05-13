@@ -29,7 +29,7 @@ class Hub(BaseModel):
 
     @model_validator(mode='after')
     def valid_name(self) -> Self:
-        if "\\" in self.name or "/" in self.name or ":" in self.name:
+        if "-" in self.name:
             raise ValueError("The connection syntax forbids "
                              "dashes in zone names")
         else:

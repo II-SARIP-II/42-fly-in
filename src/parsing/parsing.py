@@ -3,6 +3,7 @@ import sys
 from .fly_in_class import Drone, Hub, Connection, Input_Data, ZoneType
 
 from typing import List, Dict, Any
+import re
 
 
 def create_hub_metadata(data: str,
@@ -19,7 +20,6 @@ def create_hub_metadata(data: str,
             meta data and Dict is hub_data with meta data in it
     '''
     data, meta = data.split(" [")
-    import re
     if len(re.findall(r"\[", meta)) != 0 or len(re.findall(r"\]", meta)) != 1:
         raise ValueError("Input Error: Metadata: "
                          "[ or ] format not respected")
@@ -64,6 +64,9 @@ def create_hub(line: str) -> tuple[Hub, bool, bool]:
         bool = to know if the created hub was the start
         bool = to know if the created hub was the end
     '''
+    if len(re.findall(r"\:", line)) != 1:
+        raise ValueError("Input Error: data: "
+                         "too many : in the file")
     title, data = line.split(": ")
     hub_data: Dict[str, Any] = {
         "is_start": False,
