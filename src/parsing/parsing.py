@@ -19,8 +19,12 @@ def create_hub_metadata(data: str,
             meta data and Dict is hub_data with meta data in it
     '''
     data, meta = data.split(" [")
+    import re
+    if len(re.findall(r"\[", meta)) != 0 or len(re.findall(r"\]", meta)) != 1:
+        raise ValueError("Input Error: Metadata: "
+                         "[ or ] format not respected")
     meta = meta.replace("]", "")
-    lst_meta = meta.split(" ")
+    lst_meta = meta.split()
     for item in lst_meta:
         key, metavalue = item.split("=")
         match key:
