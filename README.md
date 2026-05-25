@@ -1,6 +1,6 @@
 _This project has been created as part of the 42 curriculum by pgougne_
 
-![42 Banner](assets/)
+![42 Banner](assets/42banner.jpg)
 
 # Description
 ## 1) Introduction
